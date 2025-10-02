@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Organizer;
 
 use App\Http\Controllers\Controller;
-use App\Models\OrgCategory;
 use App\Models\Organization;
+use App\Models\OrgCategory;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class OrganizerOrganizationController extends Controller
 {
@@ -17,9 +16,7 @@ class OrganizerOrganizationController extends Controller
 
     public function index()
     {
-        $organizations = Organization::where('owner_id', Auth::id())
-            ->with('category')
-            ->paginate(10);
+        $organizations = auth()->user()->organizationsOwned()->with('category')->get();
 
         return view('organizer.organizations.index', compact('organizations'));
     }
@@ -27,6 +24,7 @@ class OrganizerOrganizationController extends Controller
     public function create()
     {
         $categories = OrgCategory::all();
+
         return view('organizer.organizations.create', compact('categories'));
     }
 
@@ -37,31 +35,40 @@ class OrganizerOrganizationController extends Controller
             'name' => 'required|string|max:150',
             'description' => 'nullable|string',
             'address' => 'nullable|string',
-            'region' => 'nullable|string',
-            'city' => 'nullable|string',
-            'zipcode' => 'nullable|string',
-            'phone_number' => 'nullable|string',
+            'region' => 'nullable|string|max:120',
+            'city' => 'nullable|string|max:120',
+            'zipcode' => 'nullable|string|max:20',
+            'phone_number' => 'nullable|string|max:30',
             'logo_path' => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->all();
-        $data['owner_id'] = Auth::id();
+        $data = $request->except('logo_path');
+        $data['owner_id'] = auth()->id();
 
         if ($request->hasFile('logo_path')) {
             $data['logo_path'] = $request->file('logo_path')->store('logos', 'public');
         }
 
-        Organization::create($data);
+        $organization = Organization::create($data);
 
-        return redirect()->route('organizer.organizations.index')
-            ->with('success', 'Organisation créée avec succès!');
+        return redirect()->route('organizer.organizations.show', $organization)->with('success', 'Organization created successfully!');
+    }
+
+    public function show(Organization $organization)
+    {
+        $this->authorize('view', $organization);
+        
+        $organization->load(['category', 'socialLinks', 'events']);
+
+        return view('organizer.organizations.show', compact('organization'));
     }
 
     public function edit(Organization $organization)
     {
         $this->authorize('update', $organization);
-
+        
         $categories = OrgCategory::all();
+
         return view('organizer.organizations.edit', compact('organization', 'categories'));
     }
 
@@ -74,14 +81,14 @@ class OrganizerOrganizationController extends Controller
             'name' => 'required|string|max:150',
             'description' => 'nullable|string',
             'address' => 'nullable|string',
-            'region' => 'nullable|string',
-            'city' => 'nullable|string',
-            'zipcode' => 'nullable|string',
-            'phone_number' => 'nullable|string',
+            'region' => 'nullable|string|max:120',
+            'city' => 'nullable|string|max:120',
+            'zipcode' => 'nullable|string|max:20',
+            'phone_number' => 'nullable|string|max:30',
             'logo_path' => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->all();
+        $data = $request->except('logo_path');
 
         if ($request->hasFile('logo_path')) {
             $data['logo_path'] = $request->file('logo_path')->store('logos', 'public');
@@ -89,7 +96,6 @@ class OrganizerOrganizationController extends Controller
 
         $organization->update($data);
 
-        return redirect()->route('organizer.organizations.index')
-            ->with('success', 'Organisation mise à jour avec succès!');
+        return redirect()->route('organizer.organizations.show', $organization)->with('success', 'Organization updated successfully!');
     }
 }

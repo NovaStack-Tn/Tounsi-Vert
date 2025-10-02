@@ -16,11 +16,11 @@ class OrgCategorySeeder extends Seeder
             'Municipality',
             'Student Club',
             'Association',
-            'Collective',
+            'Foundation',
         ];
 
         foreach ($categories as $category) {
-            OrgCategory::create(['name' => $category]);
+            OrgCategory::firstOrCreate(['name' => $category]);
         }
     }
 }

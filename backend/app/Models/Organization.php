@@ -50,7 +50,7 @@ class Organization extends Model
 
     public function followers()
     {
-        return $this->belongsToMany(User::class, 'organization_followers');
+        return $this->belongsToMany(User::class, 'organization_followers')->withTimestamps();
     }
 
     public function donations()

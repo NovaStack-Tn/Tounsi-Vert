@@ -16,13 +16,12 @@ return new class extends Migration
             $table->decimal('amount', 12, 2);
             $table->enum('status', ['pending', 'succeeded', 'failed', 'refunded'])->default('pending');
             $table->string('payment_ref', 191)->nullable();
-            $table->dateTime('paid_at')->nullable();
+            $table->dateTime('paid_at')->nullable()->index();
             $table->timestamps();
             
-            $table->index('status');
-            $table->index('organization_id');
-            $table->index('event_id');
-            $table->index('paid_at');
+            $table->index(['status']);
+            $table->index(['organization_id']);
+            $table->index(['event_id']);
         });
     }
 

@@ -10,7 +10,8 @@ class EventController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Event::query()->where('is_published', true);
+        $query = Event::with(['organization', 'category'])
+            ->where('is_published', true);
 
         if ($request->filled('category')) {
             $query->where('event_category_id', $request->category);
@@ -32,10 +33,7 @@ class EventController extends Controller
             $query->whereDate('start_at', $request->date);
         }
 
-        $events = $query->with(['organization', 'category'])
-            ->orderBy('start_at', 'asc')
-            ->paginate(12);
-
+        $events = $query->orderBy('start_at')->paginate(12);
         $categories = EventCategory::all();
 
         return view('events.index', compact('events', 'categories'));
@@ -44,11 +42,9 @@ class EventController extends Controller
     public function show(Event $event)
     {
         $event->load(['organization', 'category', 'reviews.user', 'participations']);
-        
-        $attendeesCount = $event->participations()->where('type', 'attend')->count();
-        $followersCount = $event->participations()->where('type', 'follow')->count();
-        $averageRating = $event->reviews()->avg('rate');
+        $attendeesCount = $event->attendees()->count();
+        $averageRating = $event->averageRating();
 
-        return view('events.show', compact('event', 'attendeesCount', 'followersCount', 'averageRating'));
+        return view('events.show', compact('event', 'attendeesCount', 'averageRating'));
     }
 }

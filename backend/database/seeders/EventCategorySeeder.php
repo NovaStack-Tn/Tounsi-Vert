@@ -18,12 +18,12 @@ class EventCategorySeeder extends Seeder
             'Tree Planting',
             'Clean Up',
             'Recycling',
-            'Community Development',
-            'Youth Programs',
+            'Community Support',
+            'Emergency Relief',
         ];
 
         foreach ($categories as $category) {
-            EventCategory::create(['name' => $category]);
+            EventCategory::firstOrCreate(['name' => $category]);
         }
     }
 }

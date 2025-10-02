@@ -10,13 +10,15 @@ class AdminOrganizationController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware(['auth', 'admin']);
     }
 
     public function index()
     {
-        $organizations = Organization::with('category', 'owner')
-            ->paginate(15);
+        $organizations = Organization::with(['owner', 'category'])
+            ->withCount('events')
+            ->latest()
+            ->paginate(20);
 
         return view('admin.organizations.index', compact('organizations'));
     }
@@ -25,20 +27,20 @@ class AdminOrganizationController extends Controller
     {
         $organization->update(['is_verified' => true]);
 
-        return redirect()->back()->with('success', 'Organisation vérifiée avec succès!');
+        return back()->with('success', 'Organization verified successfully!');
     }
 
     public function unverify(Organization $organization)
     {
         $organization->update(['is_verified' => false]);
 
-        return redirect()->back()->with('success', 'Vérification de l\'organisation annulée!');
+        return back()->with('success', 'Organization unverified.');
     }
 
     public function destroy(Organization $organization)
     {
         $organization->delete();
 
-        return redirect()->back()->with('success', 'Organisation supprimée avec succès!');
+        return back()->with('success', 'Organization deleted successfully!');
     }
 }

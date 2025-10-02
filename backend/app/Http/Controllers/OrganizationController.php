@@ -10,7 +10,8 @@ class OrganizationController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Organization::query()->where('is_verified', true);
+        $query = Organization::with('category')
+            ->where('is_verified', true);
 
         if ($request->filled('category')) {
             $query->where('org_category_id', $request->category);
@@ -24,9 +25,7 @@ class OrganizationController extends Controller
             $query->where('city', $request->city);
         }
 
-        $organizations = $query->with('category')
-            ->paginate(12);
-
+        $organizations = $query->withCount('followers')->paginate(12);
         $categories = OrgCategory::all();
 
         return view('organizations.index', compact('organizations', 'categories'));
@@ -34,15 +33,12 @@ class OrganizationController extends Controller
 
     public function show(Organization $organization)
     {
-        $organization->load(['category', 'events', 'socialLinks']);
-        
-        $followersCount = $organization->followers()->count();
-        $upcomingEvents = $organization->events()
-            ->where('is_published', true)
-            ->where('start_at', '>', now())
-            ->orderBy('start_at', 'asc')
-            ->get();
+        $organization->load(['category', 'socialLinks', 'events' => function ($query) {
+            $query->where('is_published', true)->orderBy('start_at');
+        }]);
 
-        return view('organizations.show', compact('organization', 'followersCount', 'upcomingEvents'));
+        $followersCount = $organization->followers()->count();
+
+        return view('organizations.show', compact('organization', 'followersCount'));
     }
 }

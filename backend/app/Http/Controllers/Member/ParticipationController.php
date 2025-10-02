@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Participation;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ParticipationController extends Controller
 {
@@ -15,34 +15,70 @@ class ParticipationController extends Controller
         $this->middleware('auth');
     }
 
-    public function store(Request $request, Event $event)
+    public function attend(Event $event)
     {
-        $request->validate([
-            'type' => 'required|in:attend,follow,share',
-        ]);
+        if ($event->isFull()) {
+            return back()->with('error', 'This event is full.');
+        }
 
-        $participation = Participation::create([
-            'user_id' => Auth::id(),
-            'event_id' => $event->id,
-            'type' => $request->type,
-            'meta' => $request->meta ?? null,
-        ]);
+        try {
+            DB::transaction(function () use ($event) {
+                Participation::create([
+                    'user_id' => auth()->id(),
+                    'event_id' => $event->id,
+                    'type' => 'attend',
+                ]);
 
-        // Update user score
-        $this->updateUserScore($request->type);
+                // Update user score
+                auth()->user()->increment('score', 10);
+            });
 
-        return redirect()->back()->with('success', 'Participation enregistrée avec succès!');
+            return back()->with('success', 'You have successfully joined this event!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'You have already joined this event.');
+        }
     }
 
-    private function updateUserScore($type)
+    public function follow(Event $event)
     {
-        $user = Auth::user();
-        $points = [
-            'attend' => 10,
-            'follow' => 1,
-            'share' => 2,
-        ];
+        try {
+            DB::transaction(function () use ($event) {
+                Participation::create([
+                    'user_id' => auth()->id(),
+                    'event_id' => $event->id,
+                    'type' => 'follow',
+                ]);
 
-        $user->increment('score', $points[$type] ?? 0);
+                auth()->user()->increment('score', 1);
+            });
+
+            return back()->with('success', 'You are now following this event!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'You are already following this event.');
+        }
+    }
+
+    public function share(Event $event, Request $request)
+    {
+        $request->validate([
+            'platform' => 'nullable|string',
+        ]);
+
+        try {
+            DB::transaction(function () use ($event, $request) {
+                Participation::create([
+                    'user_id' => auth()->id(),
+                    'event_id' => $event->id,
+                    'type' => 'share',
+                    'meta' => ['platform' => $request->platform ?? 'other'],
+                ]);
+
+                auth()->user()->increment('score', 2);
+            });
+
+            return back()->with('success', 'Thank you for sharing!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'You have already shared this event.');
+        }
     }
 }

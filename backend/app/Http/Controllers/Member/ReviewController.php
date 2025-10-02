@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Review;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
 {
@@ -22,17 +21,27 @@ class ReviewController extends Controller
             'comment' => 'nullable|string|max:1000',
         ]);
 
-        Review::updateOrCreate(
-            [
-                'user_id' => Auth::id(),
+        // Check if user participated
+        $participated = $event->participations()
+            ->where('user_id', auth()->id())
+            ->whereIn('type', ['attend', 'donation', 'follow'])
+            ->exists();
+
+        if (!$participated) {
+            return back()->with('error', 'You must participate in the event before reviewing.');
+        }
+
+        try {
+            Review::create([
+                'user_id' => auth()->id(),
                 'event_id' => $event->id,
-            ],
-            [
                 'rate' => $request->rate,
                 'comment' => $request->comment,
-            ]
-        );
+            ]);
 
-        return redirect()->back()->with('success', 'Avis ajouté avec succès!');
+            return back()->with('success', 'Review submitted successfully!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'You have already reviewed this event.');
+        }
     }
 }

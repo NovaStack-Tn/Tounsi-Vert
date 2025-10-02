@@ -18,9 +18,9 @@ return new class extends Migration
             $table->enum('status', ['open', 'in_review', 'resolved', 'dismissed'])->default('open');
             $table->timestamps();
             
-            $table->index('status');
-            $table->index('organization_id');
-            $table->index('event_id');
+            $table->index(['status']);
+            $table->index(['organization_id']);
+            $table->index(['event_id']);
         });
     }
 

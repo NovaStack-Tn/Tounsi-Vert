@@ -67,16 +67,24 @@ class Event extends Model
 
     public function attendees()
     {
-        return $this->participations()->where('type', 'attend');
+        return $this->hasMany(Participation::class)->where('type', 'attend');
     }
 
     public function followers()
     {
-        return $this->participations()->where('type', 'follow');
+        return $this->hasMany(Participation::class)->where('type', 'follow');
     }
 
     public function averageRating()
     {
         return $this->reviews()->avg('rate');
+    }
+
+    public function isFull()
+    {
+        if (!$this->max_participants) {
+            return false;
+        }
+        return $this->attendees()->count() >= $this->max_participants;
     }
 }

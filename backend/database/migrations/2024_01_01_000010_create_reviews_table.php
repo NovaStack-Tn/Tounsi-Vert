@@ -18,9 +18,11 @@ return new class extends Migration
             $table->softDeletes();
             
             $table->unique(['user_id', 'event_id']);
-            $table->index('event_id');
-            $table->index('rate');
+            $table->index(['event_id']);
+            $table->index(['rate']);
         });
+        
+        DB::statement('ALTER TABLE reviews ADD CONSTRAINT reviews_rate_check CHECK (rate BETWEEN 1 AND 5)');
     }
 
     public function down(): void

@@ -10,18 +10,19 @@ class AdminReportController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware(['auth', 'admin']);
     }
 
     public function index()
     {
         $reports = Report::with(['user', 'event', 'organization'])
-            ->paginate(15);
+            ->latest()
+            ->paginate(20);
 
         return view('admin.reports.index', compact('reports'));
     }
 
-    public function updateStatus(Request $request, Report $report)
+    public function updateStatus(Report $report, Request $request)
     {
         $request->validate([
             'status' => 'required|in:open,in_review,resolved,dismissed',
@@ -29,6 +30,6 @@ class AdminReportController extends Controller
 
         $report->update(['status' => $request->status]);
 
-        return redirect()->back()->with('success', 'Statut du signalement mis à jour!');
+        return back()->with('success', 'Report status updated successfully!');
     }
 }
