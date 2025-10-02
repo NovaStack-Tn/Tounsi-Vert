@@ -46,7 +46,7 @@ class AdminOrganizationRequestController extends Controller
             // Create the organization
             $organization = Organization::create([
                 'owner_id' => $organizationRequest->user_id,
-                'category_id' => $organizationRequest->category_id,
+                'org_category_id' => $organizationRequest->category_id,
                 'name' => $organizationRequest->organization_name,
                 'description' => $organizationRequest->description,
                 'address' => $organizationRequest->address,

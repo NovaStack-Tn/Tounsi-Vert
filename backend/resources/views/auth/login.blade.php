@@ -30,6 +30,17 @@
             font-size: 4rem;
             margin-bottom: 20px;
         }
+        .login-logo {
+            height: 100px;
+            width: auto;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
         .login-body {
             padding: 40px;
         }
@@ -64,9 +75,9 @@
             <div class="col-md-5">
                 <div class="login-card">
                     <div class="login-header">
-                        <i class="bi bi-tree-fill"></i>
-                        <h2 class="mb-0">TounsiVert</h2>
-                        <p class="mb-0">Welcome Back!</p>
+                        <img src="{{ asset('logo.png') }}" alt="TounsiVert Logo" class="login-logo">
+                        <h2 class="mb-1 fw-bold" style="font-size: 2rem; letter-spacing: 1px;">TounsiVert</h2>
+                        <p class="mb-0" style="font-size: 1.1rem;">Welcome Back!</p>
                     </div>
                     <div class="login-body">
                         @if (session('status'))

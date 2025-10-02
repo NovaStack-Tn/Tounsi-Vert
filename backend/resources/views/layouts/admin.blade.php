@@ -104,7 +104,7 @@
         <!-- Sidebar -->
         <aside class="admin-sidebar">
             <a href="{{ route('admin.dashboard') }}" class="sidebar-brand">
-                <i class="bi bi-shield-fill-check me-2"></i>
+                <img src="{{ asset('logo.png') }}" alt="TounsiVert Logo" style="height: 35px; width: auto; margin-right: 10px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
                 <span>Admin Panel</span>
             </a>
             

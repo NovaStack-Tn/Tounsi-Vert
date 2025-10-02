@@ -23,6 +23,60 @@
         .navbar-brand {
             font-weight: 700;
             font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .navbar-brand:hover {
+            transform: scale(1.05);
+        }
+        .navbar-brand img {
+            height: 45px;
+            width: auto;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+        .navbar {
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+        .nav-link:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-2px);
+        }
+        .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            border-bottom: 3px solid #95d5b2;
+        }
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            border-radius: 12px;
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #52b788 0%, #2d6a4f 100%);
+            border: 2px solid #95d5b2;
+            transition: all 0.3s ease;
+        }
+        .user-avatar:hover {
+            transform: rotate(5deg) scale(1.1);
+        }
+        .badge-score {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #2d6a4f;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 8px rgba(255,215,0,0.3);
         }
         .hero-section {
             background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
@@ -34,15 +88,23 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
         }
+        footer {
+            background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
+        }
+        .footer-logo {
+            height: 60px;
+            width: auto;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
     </style>
 </head>
 <body>
     <!-- Enhanced Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary-custom shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary-custom">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{{ route('home') }}">
-                <i class="bi bi-tree-fill me-2" style="font-size: 1.8rem;"></i>
-                <span style="font-size: 1.5rem; font-weight: 700;">TounsiVert</span>
+                <img src="{{ asset('logo.png') }}" alt="TounsiVert Logo" class="me-2">
+                <span style="font-size: 1.5rem; font-weight: 700; letter-spacing: 0.5px;">TounsiVert</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -68,23 +130,21 @@
                         <a class="nav-link px-3 {{ request()->routeIs('about') ? 'active fw-bold' : '' }}" href="{{ route('about') }}">
                             <i class="bi bi-info-circle me-1"></i>About
                         </a>
-                    </li>
                 </ul>
                 <ul class="navbar-nav">
                     @auth
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-                                <div class="bg-white text-success rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                <div class="user-avatar text-white rounded-circle d-flex align-items-center justify-content-center me-2">
                                     <i class="bi bi-person-fill"></i>
                                 </div>
-                                <span>{{ auth()->user()->full_name }}</span>
-                                <span class="badge bg-warning text-dark ms-2">{{ auth()->user()->score }} pts</span>
+                                <span class="fw-semibold">{{ auth()->user()->full_name }}</span>
+                                <span class="badge-score ms-2"><i class="bi bi-star-fill"></i> {{ auth()->user()->score }} pts</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow">
                                 <li class="dropdown-header">
                                     <small class="text-muted">{{ auth()->user()->email }}</small>
                                 </li>
-                                <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <a class="dropdown-item" href="{{ route('dashboard') }}">
                                         <i class="bi bi-speedometer2 me-2"></i>Dashboard
@@ -177,12 +237,15 @@
     @yield('content')
 
     <!-- Footer -->
-    <footer class="bg-dark text-white py-5 mt-5">
+    <footer class="text-white py-5 mt-5">
         <div class="container">
             <div class="row">
                 <div class="col-md-4 mb-3">
-                    <h5><i class="bi bi-tree-fill"></i> TounsiVert</h5>
-                    <p>Empowering Tunisians to make a positive impact in their communities.</p>
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{{ asset('logo.png') }}" alt="TounsiVert Logo" class="footer-logo me-2">
+                        <h5 class="mb-0" style="font-size: 1.5rem; font-weight: 700;">TounsiVert</h5>
+                    </div>
+                    <p class="text-white-50">Empowering Tunisians to make a positive impact in their communities through sustainable events and initiatives.</p>
                 </div>
                 <div class="col-md-4 mb-3">
                     <h5>Quick Links</h5>
