@@ -37,62 +37,108 @@
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary-custom">
+    <!-- Enhanced Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary-custom shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('home') }}">
-                <i class="bi bi-tree-fill"></i> TounsiVert
+            <a class="navbar-brand d-flex align-items-center" href="{{ route('home') }}">
+                <i class="bi bi-tree-fill me-2" style="font-size: 1.8rem;"></i>
+                <span style="font-size: 1.5rem; font-weight: 700;">TounsiVert</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
+                <ul class="navbar-nav me-auto ms-4">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('home') }}">Home</a>
+                        <a class="nav-link px-3 {{ request()->routeIs('home') ? 'active fw-bold' : '' }}" href="{{ route('home') }}">
+                            <i class="bi bi-house-door me-1"></i>Home
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('events.index') }}">Events</a>
+                        <a class="nav-link px-3 {{ request()->routeIs('events.*') ? 'active fw-bold' : '' }}" href="{{ route('events.index') }}">
+                            <i class="bi bi-calendar-event me-1"></i>Events
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('organizations.index') }}">Organizations</a>
+                        <a class="nav-link px-3 {{ request()->routeIs('organizations.*') ? 'active fw-bold' : '' }}" href="{{ route('organizations.index') }}">
+                            <i class="bi bi-building me-1"></i>Organizations
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('about') }}">About</a>
+                        <a class="nav-link px-3 {{ request()->routeIs('about') ? 'active fw-bold' : '' }}" href="{{ route('about') }}">
+                            <i class="bi bi-info-circle me-1"></i>About
+                        </a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">
                     @auth
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle"></i> {{ auth()->user()->full_name }}
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                                <div class="bg-white text-success rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <span>{{ auth()->user()->full_name }}</span>
+                                <span class="badge bg-warning text-dark ms-2">{{ auth()->user()->score }} pts</span>
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{{ route('dashboard') }}">Dashboard</a></li>
+                            <ul class="dropdown-menu dropdown-menu-end shadow">
+                                <li class="dropdown-header">
+                                    <small class="text-muted">{{ auth()->user()->email }}</small>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('dashboard') }}">
+                                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                                    </a>
+                                </li>
                                 @if(auth()->user()->isOrganizer() || auth()->user()->isAdmin())
-                                    <li><a class="dropdown-item" href="{{ route('organizer.organizations.index') }}">My Organizations</a></li>
-                                    <li><a class="dropdown-item" href="{{ route('organizer.events.index') }}">My Events</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li class="dropdown-header">Organizer</li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('organizer.organizations.index') }}">
+                                            <i class="bi bi-building me-2"></i>My Organizations
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('organizer.events.index') }}">
+                                            <i class="bi bi-calendar-check me-2"></i>My Events
+                                        </a>
+                                    </li>
                                 @endif
                                 @if(auth()->user()->isAdmin())
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}">Admin Panel</a></li>
+                                    <li class="dropdown-header">Administrator</li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="{{ route('admin.dashboard') }}">
+                                            <i class="bi bi-shield-check me-2"></i>Admin Panel
+                                        </a>
+                                    </li>
                                 @endif
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profile</a></li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                        <i class="bi bi-gear me-2"></i>Settings
+                                    </a>
+                                </li>
                                 <li>
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
-                                        <button type="submit" class="dropdown-item">Logout</button>
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                        </button>
                                     </form>
                                 </li>
                             </ul>
                         </li>
                     @else
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('login') }}">Login</a>
+                            <a class="nav-link px-3" href="{{ route('login') }}">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('register') }}">Register</a>
+                            <a class="btn btn-light text-success ms-2" href="{{ route('register') }}">
+                                <i class="bi bi-person-plus me-1"></i>Register
+                            </a>
                         </li>
                     @endauth
                 </ul>

@@ -1,21 +1,11 @@
-@extends('layouts.public')
+@extends('layouts.admin')
 
-@section('title', 'Manage Reports - Admin')
+@section('title', 'Manage Reports')
+@section('page-title', 'Reports Management')
+@section('page-subtitle', 'Review and moderate user reports')
 
 @section('content')
-<div class="bg-dark text-white py-4">
-    <div class="container">
-        <h1><i class="bi bi-flag"></i> Manage Reports</h1>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}" class="text-white">Admin</a></li>
-                <li class="breadcrumb-item active text-white">Reports</li>
-            </ol>
-        </nav>
-    </div>
-</div>
-
-<div class="container py-5">
+<div>
     <div class="card shadow-sm">
         <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">All Reports ({{ $reports->total() }})</h5>
@@ -143,5 +133,4 @@
             {{ $reports->links() }}
         </div>
     </div>
-</div>
 @endsection

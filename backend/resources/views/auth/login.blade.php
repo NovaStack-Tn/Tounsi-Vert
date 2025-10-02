@@ -141,16 +141,6 @@
                         </form>
                     </div>
                 </div>
-
-                <!-- Demo Accounts Info -->
-                <div class="card mt-3 bg-light">
-                    <div class="card-body small">
-                        <strong>Demo Accounts:</strong><br>
-                        Admin: admin@tounsivert.tn / password<br>
-                        Organizer: organizer@tounsivert.tn / password<br>
-                        Member: member@tounsivert.tn / password
-                    </div>
-                </div>
             </div>
         </div>
     </div>

@@ -1,16 +1,11 @@
-@extends('layouts.public')
+@extends('layouts.admin')
 
 @section('title', 'Admin Dashboard')
+@section('page-title', 'Dashboard')
+@section('page-subtitle', 'Overview of your platform statistics')
 
 @section('content')
-<div class="bg-dark text-white py-4">
-    <div class="container">
-        <h1><i class="bi bi-speedometer2"></i> Admin Dashboard</h1>
-        <p class="mb-0">Welcome, {{ auth()->user()->full_name }}</p>
-    </div>
-</div>
-
-<div class="container py-5">
+<div>
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
@@ -205,5 +200,4 @@
             </div>
         </div>
     </div>
-</div>
 @endsection

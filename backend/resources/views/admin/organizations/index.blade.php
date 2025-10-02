@@ -1,21 +1,11 @@
-@extends('layouts.public')
+@extends('layouts.admin')
 
-@section('title', 'Manage Organizations - Admin')
+@section('title', 'Manage Organizations')
+@section('page-title', 'Organizations Management')
+@section('page-subtitle', 'Verify and manage all organizations')
 
 @section('content')
-<div class="bg-dark text-white py-4">
-    <div class="container">
-        <h1><i class="bi bi-building"></i> Manage Organizations</h1>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}" class="text-white">Admin</a></li>
-                <li class="breadcrumb-item active text-white">Organizations</li>
-            </ol>
-        </nav>
-    </div>
-</div>
-
-<div class="container py-5">
+<div>
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">All Organizations ({{ $organizations->total() }})</h5>
@@ -125,5 +115,4 @@
             {{ $organizations->links() }}
         </div>
     </div>
-</div>
 @endsection
