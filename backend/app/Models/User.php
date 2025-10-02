@@ -64,6 +64,11 @@ class User extends Authenticatable
         return $this->hasMany(Report::class);
     }
 
+    public function organizationRequests()
+    {
+        return $this->hasMany(OrganizationRequest::class);
+    }
+
     // Helper methods
     public function isAdmin()
     {

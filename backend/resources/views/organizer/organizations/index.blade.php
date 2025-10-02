@@ -1,23 +1,17 @@
-@extends('layouts.public')
+@extends('layouts.organizer')
 
 @section('title', 'My Organizations')
+@section('page-title', 'My Organizations')
+@section('page-subtitle', 'Manage your organizations and track their performance')
 
 @section('content')
-<div class="bg-primary-custom text-white py-4">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h1><i class="bi bi-building"></i> My Organizations</h1>
-                <p class="mb-0">Manage your organizations and track their performance</p>
-            </div>
-            <a href="{{ route('organizer.organizations.create') }}" class="btn btn-light">
-                <i class="bi bi-plus-circle me-1"></i>Create Organization
-            </a>
-        </div>
-    </div>
+<div class="mb-4">
+    <a href="{{ route('organizer.organizations.create') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>Create Organization
+    </a>
 </div>
 
-<div class="container py-5">
+<div>
     @if($organizations->count() > 0)
         <div class="row">
             @foreach($organizations as $org)
@@ -85,5 +79,4 @@
             </a>
         </div>
     @endif
-</div>
 @endsection

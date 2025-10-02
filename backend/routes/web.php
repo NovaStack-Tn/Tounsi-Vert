@@ -11,9 +11,12 @@ use App\Http\Controllers\Member\ReportController;
 use App\Http\Controllers\Member\DashboardController as MemberDashboardController;
 use App\Http\Controllers\Organizer\OrganizerEventController;
 use App\Http\Controllers\Organizer\OrganizerOrganizationController;
+use App\Http\Controllers\Organizer\OrganizerDashboardController;
+use App\Http\Controllers\OrganizationRequestController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminOrganizationController;
 use App\Http\Controllers\Admin\AdminReportController;
+use App\Http\Controllers\Admin\AdminOrganizationRequestController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -62,6 +65,11 @@ Route::middleware('auth')->group(function () {
     
     // Reports
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
+    
+    // Organization Requests
+    Route::get('/organization-request', [OrganizationRequestController::class, 'create'])->name('organization-request.create');
+    Route::post('/organization-request', [OrganizationRequestController::class, 'store'])->name('organization-request.store');
+    Route::get('/organization-requests', [OrganizationRequestController::class, 'index'])->name('organization-requests.index');
 });
 
 /*
@@ -71,6 +79,9 @@ Route::middleware('auth')->group(function () {
 */
 
 Route::middleware(['auth'])->prefix('organizer')->name('organizer.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [OrganizerDashboardController::class, 'index'])->name('dashboard');
+    
     // Organizations
     Route::resource('organizations', OrganizerOrganizationController::class);
     
@@ -96,6 +107,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Reports
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
     Route::patch('/reports/{report}/status', [AdminReportController::class, 'updateStatus'])->name('reports.updateStatus');
+    
+    // Organization Requests
+    Route::get('/organization-requests', [AdminOrganizationRequestController::class, 'index'])->name('organization-requests.index');
+    Route::get('/organization-requests/{organizationRequest}', [AdminOrganizationRequestController::class, 'show'])->name('organization-requests.show');
+    Route::post('/organization-requests/{organizationRequest}/approve', [AdminOrganizationRequestController::class, 'approve'])->name('organization-requests.approve');
+    Route::post('/organization-requests/{organizationRequest}/reject', [AdminOrganizationRequestController::class, 'reject'])->name('organization-requests.reject');
 });
 
 require __DIR__.'/auth.php';

@@ -35,7 +35,7 @@ class AuthenticatedSessionController extends Controller
         if ($user->isAdmin()) {
             return redirect()->intended(route('admin.dashboard'));
         } elseif ($user->isOrganizer()) {
-            return redirect()->intended(route('organizer.events.index'));
+            return redirect()->intended(route('organizer.dashboard'));
         }
 
         return redirect()->intended(RouteServiceProvider::HOME);

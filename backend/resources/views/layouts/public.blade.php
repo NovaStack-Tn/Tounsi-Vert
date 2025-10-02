@@ -90,6 +90,14 @@
                                         <i class="bi bi-speedometer2 me-2"></i>Dashboard
                                     </a>
                                 </li>
+                                @if(auth()->user()->isMember())
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-primary" href="{{ route('organization-request.create') }}">
+                                            <i class="bi bi-building-add me-2"></i>Request Organization
+                                        </a>
+                                    </li>
+                                @endif
                                 @if(auth()->user()->isOrganizer() || auth()->user()->isAdmin())
                                     <li><hr class="dropdown-divider"></li>
                                     <li class="dropdown-header">Organizer</li>

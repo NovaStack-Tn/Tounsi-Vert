@@ -1,43 +1,40 @@
-@extends('layouts.public')
+@extends('layouts.organizer')
 
 @section('title', $event->title . ' - Management')
+@section('page-title', $event->title)
+@section('page-subtitle', 'Event Management & Analytics')
 
 @section('content')
-<div class="bg-primary-custom text-white py-4">
-    <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-2">
-                <li class="breadcrumb-item"><a href="{{ route('organizer.events.index') }}" class="text-white">My Events</a></li>
-                <li class="breadcrumb-item active text-white">{{ Str::limit($event->title, 50) }}</li>
-            </ol>
-        </nav>
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h1><i class="bi bi-calendar-event"></i> {{ $event->title }}</h1>
-                @if($event->is_published)
-                    <span class="badge bg-success">Published</span>
-                @else
-                    <span class="badge bg-warning">Draft</span>
-                @endif
-                @if($event->start_at < now())
-                    <span class="badge bg-dark">Past Event</span>
-                @else
-                    <span class="badge bg-info">Upcoming</span>
-                @endif
-            </div>
-            <div>
-                <a href="{{ route('organizer.events.edit', $event) }}" class="btn btn-light me-2">
-                    <i class="bi bi-pencil"></i> Edit
-                </a>
-                <a href="{{ route('events.show', $event) }}" target="_blank" class="btn btn-outline-light">
-                    <i class="bi bi-box-arrow-up-right"></i> Public View
-                </a>
-            </div>
-        </div>
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('organizer.events.index') }}">My Events</a></li>
+            <li class="breadcrumb-item active">{{ Str::limit($event->title, 50) }}</li>
+        </ol>
+    </nav>
+    <div class="d-flex gap-2 align-items-center mb-3">
+        @if($event->is_published)
+            <span class="badge bg-success">Published</span>
+        @else
+            <span class="badge bg-warning">Draft</span>
+        @endif
+        @if($event->start_at < now())
+            <span class="badge bg-dark">Past Event</span>
+        @else
+            <span class="badge bg-info">Upcoming</span>
+        @endif
+    </div>
+    <div>
+        <a href="{{ route('organizer.events.edit', $event) }}" class="btn btn-primary me-2">
+            <i class="bi bi-pencil"></i> Edit Event
+        </a>
+        <a href="{{ route('events.show', $event) }}" target="_blank" class="btn btn-outline-secondary">
+            <i class="bi bi-box-arrow-up-right"></i> Public View
+        </a>
     </div>
 </div>
 
-<div class="container py-5">
+<div>
     <!-- Statistics -->
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
@@ -284,5 +281,4 @@
             </div>
         </div>
     </div>
-</div>
 @endsection

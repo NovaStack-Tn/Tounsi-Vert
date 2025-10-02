@@ -1,23 +1,17 @@
-@extends('layouts.public')
+@extends('layouts.organizer')
 
 @section('title', 'My Events')
+@section('page-title', 'My Events')
+@section('page-subtitle', 'Manage and track all your events')
 
 @section('content')
-<div class="bg-primary-custom text-white py-4">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h1><i class="bi bi-calendar-event"></i> My Events</h1>
-                <p class="mb-0">Manage and track all your events</p>
-            </div>
-            <a href="{{ route('organizer.events.create') }}" class="btn btn-light">
-                <i class="bi bi-plus-circle me-1"></i>Create Event
-            </a>
-        </div>
-    </div>
+<div class="mb-4">
+    <a href="{{ route('organizer.events.create') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>Create Event
+    </a>
 </div>
 
-<div class="container py-5">
+<div>
     <!-- Filter Tabs -->
     <ul class="nav nav-tabs mb-4" role="tablist">
         <li class="nav-item">
@@ -108,5 +102,4 @@
             </a>
         </div>
     @endif
-</div>
 @endsection

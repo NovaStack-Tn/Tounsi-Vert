@@ -1,38 +1,36 @@
-@extends('layouts.public')
+@extends('layouts.organizer')
 
 @section('title', $organization->name . ' - Management')
+@section('page-title', $organization->name)
+@section('page-subtitle', $organization->is_verified ? 'Verified Organization' : 'Pending Verification')
 
 @section('content')
-<div class="bg-primary-custom text-white py-4">
-    <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-2">
-                <li class="breadcrumb-item"><a href="{{ route('organizer.organizations.index') }}" class="text-white">My Organizations</a></li>
-                <li class="breadcrumb-item active text-white">{{ $organization->name }}</li>
-            </ol>
-        </nav>
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h1><i class="bi bi-building"></i> {{ $organization->name }}</h1>
-                @if($organization->is_verified)
-                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> Verified</span>
-                @else
-                    <span class="badge bg-warning"><i class="bi bi-hourglass"></i> Pending Verification</span>
-                @endif
-            </div>
-            <div>
-                <a href="{{ route('organizer.organizations.edit', $organization) }}" class="btn btn-light me-2">
-                    <i class="bi bi-pencil"></i> Edit
-                </a>
-                <a href="{{ route('organizations.show', $organization) }}" target="_blank" class="btn btn-outline-light">
-                    <i class="bi bi-box-arrow-up-right"></i> Public View
-                </a>
-            </div>
-        </div>
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('organizer.organizations.index') }}">My Organizations</a></li>
+            <li class="breadcrumb-item active">{{ $organization->name }}</li>
+        </ol>
+    </nav>
+    <div class="d-flex gap-2">
+        @if($organization->is_verified)
+            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Verified</span>
+        @else
+            <span class="badge bg-warning"><i class="bi bi-hourglass"></i> Pending Verification</span>
+        @endif
     </div>
 </div>
 
-<div class="container py-5">
+<div class="mb-4">
+    <a href="{{ route('organizer.organizations.edit', $organization) }}" class="btn btn-primary me-2">
+        <i class="bi bi-pencil"></i> Edit Organization
+    </a>
+    <a href="{{ route('organizations.show', $organization) }}" target="_blank" class="btn btn-outline-secondary">
+        <i class="bi bi-box-arrow-up-right"></i> Public View
+    </a>
+</div>
+
+<div>
     <!-- Statistics -->
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
@@ -235,5 +233,4 @@
             @endif
         </div>
     </div>
-</div>
 @endsection
