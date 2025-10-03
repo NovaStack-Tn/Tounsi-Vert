@@ -120,6 +120,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/organizations/{organization}/unverify', [AdminOrganizationController::class, 'unverify'])->name('organizations.unverify');
     Route::delete('/organizations/{organization}', [AdminOrganizationController::class, 'destroy'])->name('organizations.destroy');
     
+    // Events
+    Route::get('/events', [AdminEventController::class, 'index'])->name('events.index');
+    Route::get('/events/leaderboard', [AdminEventController::class, 'leaderboard'])->name('events.leaderboard');
+    Route::get('/events/{event}', [AdminEventController::class, 'show'])->name('events.show');
+    Route::delete('/events/{event}', [AdminEventController::class, 'destroy'])->name('events.destroy');
+    
     // Reports
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
     Route::post('/reports/{report}/resolve', [AdminReportController::class, 'resolve'])->name('reports.resolve');
