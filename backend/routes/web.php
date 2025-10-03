@@ -70,6 +70,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
     
     // Reports
+    Route::get('/reports', [ReportController::class, 'index'])->name('member.reports.index');
+    Route::get('/reports/create', [ReportController::class, 'create'])->name('member.reports.create');
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
     
     // Organization Requests

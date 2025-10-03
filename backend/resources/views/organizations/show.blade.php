@@ -93,6 +93,9 @@
                             </button>
                         </form>
                     @endif
+                    <a href="{{ route('member.reports.create', ['organization_id' => $organization->id]) }}" class="btn btn-outline-light w-100">
+                        <i class="bi bi-flag me-2"></i>Report Organization
+                    </a>
                 @else
                     <a href="{{ route('login') }}" class="btn btn-light btn-lg w-100 mb-2">
                         <i class="bi bi-heart me-2"></i>Follow

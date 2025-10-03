@@ -183,8 +183,8 @@
                                 @endif
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                                        <i class="bi bi-gear me-2"></i>Settings
+                                    <a class="dropdown-item" href="{{ route('member.reports.index') }}">
+                                        <i class="bi bi-flag me-2"></i>My Reports
                                     </a>
                                 </li>
                                 <li>

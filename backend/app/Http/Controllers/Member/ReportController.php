@@ -13,6 +13,31 @@ class ReportController extends Controller
         $this->middleware('auth');
     }
 
+    public function index(Request $request)
+    {
+        $status = $request->get('status', 'all');
+        
+        $query = Report::where('user_id', auth()->id())
+            ->with(['event', 'organization'])
+            ->latest();
+        
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+        
+        $reports = $query->paginate(10)->appends(['status' => $status]);
+        
+        return view('member.reports.index', compact('reports', 'status'));
+    }
+    
+    public function create(Request $request)
+    {
+        $organizationId = $request->get('organization_id');
+        $eventId = $request->get('event_id');
+        
+        return view('member.reports.create', compact('organizationId', 'eventId'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -28,9 +53,10 @@ class ReportController extends Controller
             'organization_id' => $request->organization_id,
             'reason' => $request->reason,
             'details' => $request->details,
-            'status' => 'open',
+            'status' => 'pending',
         ]);
 
-        return back()->with('success', 'Report submitted successfully. We will review it soon.');
+        return redirect()->route('member.reports.index')
+            ->with('success', 'Thank you for your report! We will contact you soon.');
     }
 }
