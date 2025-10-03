@@ -147,7 +147,7 @@
                                 </li>
                                 <li>
                                     <a class="dropdown-item" href="{{ route('dashboard') }}">
-                                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                                        <i class="bi bi-person-circle me-2"></i>My Profile
                                     </a>
                                 </li>
                                 @if(auth()->user()->isMember())

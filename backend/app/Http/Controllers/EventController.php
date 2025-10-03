@@ -70,7 +70,22 @@ class EventController extends Controller
             ->with('user')
             ->latest()
             ->paginate(5);
+        
+        // Check if user has donated and calculate total
+        $hasDonated = false;
+        $totalDonated = 0;
+        if (auth()->check()) {
+            $userDonations = $event->donations()
+                ->whereHas('participation', function ($query) {
+                    $query->where('user_id', auth()->id());
+                })
+                ->where('status', 'succeeded')
+                ->get();
+            
+            $hasDonated = $userDonations->isNotEmpty();
+            $totalDonated = $userDonations->sum('amount');
+        }
 
-        return view('events.show', compact('event', 'attendeesCount', 'averageRating', 'hasJoined', 'hasReviewed', 'userReview', 'reviews'));
+        return view('events.show', compact('event', 'attendeesCount', 'averageRating', 'hasJoined', 'hasReviewed', 'userReview', 'reviews', 'hasDonated', 'totalDonated'));
     }
 }

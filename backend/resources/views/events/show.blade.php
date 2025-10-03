@@ -241,14 +241,27 @@
                                             <small class="text-muted">{{ $review->created_at->diffForHumans() }}</small>
                                         </div>
                                     </div>
-                                    <span class="text-warning">
-                                        @for($i = 0; $i < $review->rate; $i++)
-                                            <i class="bi bi-star-fill"></i>
-                                        @endfor
-                                        @for($i = $review->rate; $i < 5; $i++)
-                                            <i class="bi bi-star"></i>
-                                        @endfor
-                                    </span>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="text-warning">
+                                            @for($i = 0; $i < $review->rate; $i++)
+                                                <i class="bi bi-star-fill"></i>
+                                            @endfor
+                                            @for($i = $review->rate; $i < 5; $i++)
+                                                <i class="bi bi-star"></i>
+                                            @endfor
+                                        </span>
+                                        @auth
+                                            @if($review->user_id === auth()->id())
+                                                <form action="{{ route('reviews.destroy', $review) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this review?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Review">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        @endauth
+                                    </div>
                                 </div>
                                 @if($review->comment)
                                     <p class="mb-0 ms-5">{{ $review->comment }}</p>
@@ -286,7 +299,7 @@
                                     <i class="bi bi-x-circle me-2"></i>Leave Event
                                 </button>
                             </form>
-                            <div class="alert alert-success py-2 px-3">
+                            <div class="alert alert-success py-2 px-3 mb-3">
                                 <i class="bi bi-check-circle me-2"></i>
                                 <small>You have joined this event!</small>
                             </div>
@@ -304,9 +317,34 @@
                             </form>
                         @endif
                         
-                        <a href="{{ route('donations.create', $event) }}" class="btn btn-warning w-100 mb-2 action-btn">
-                            <i class="bi bi-heart-fill me-2"></i>Donate
-                        </a>
+                        @if($hasDonated)
+                            <div class="card bg-warning bg-opacity-10 border-warning mb-3">
+                                <div class="card-body p-3">
+                                    <div class="text-center mb-2">
+                                        <i class="bi bi-heart-fill text-warning" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <h6 class="text-center mb-2">Thank You for Your Generosity! 🙏</h6>
+                                    <p class="text-center mb-2 small">
+                                        Your total contribution to this event:
+                                    </p>
+                                    <div class="text-center mb-3">
+                                        <span class="badge bg-warning text-dark px-3 py-2" style="font-size: 1.1rem;">
+                                            ${{ number_format($totalDonated, 2) }}
+                                        </span>
+                                    </div>
+                                    <p class="text-center text-muted small mb-2">
+                                        Your support makes a real difference!
+                                    </p>
+                                    <a href="{{ route('donations.create', $event) }}" class="btn btn-warning w-100 action-btn">
+                                        <i class="bi bi-heart-fill me-2"></i>Donate More
+                                    </a>
+                                </div>
+                            </div>
+                        @else
+                            <a href="{{ route('donations.create', $event) }}" class="btn btn-warning w-100 mb-2 action-btn">
+                                <i class="bi bi-heart-fill me-2"></i>Donate
+                            </a>
+                        @endif
                         
                         <form method="POST" action="{{ route('events.share', $event) }}" class="mb-2">
                             @csrf

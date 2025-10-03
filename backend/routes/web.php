@@ -67,6 +67,7 @@ Route::middleware('auth')->group(function () {
     
     // Reviews
     Route::post('/events/{event}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
     
     // Reports
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
