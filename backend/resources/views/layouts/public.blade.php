@@ -162,13 +162,8 @@
                                     <li><hr class="dropdown-divider"></li>
                                     <li class="dropdown-header">Organizer</li>
                                     <li>
-                                        <a class="dropdown-item" href="{{ route('organizer.organizations.index') }}">
-                                            <i class="bi bi-building me-2"></i>My Organizations
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="{{ route('organizer.events.index') }}">
-                                            <i class="bi bi-calendar-check me-2"></i>My Events
+                                        <a class="dropdown-item" href="{{ route('organizer.dashboard') }}">
+                                            <i class="bi bi-building me-2"></i>My Organization
                                         </a>
                                     </li>
                                 @endif
