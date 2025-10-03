@@ -53,7 +53,7 @@ class ReportController extends Controller
             'organization_id' => $request->organization_id,
             'reason' => $request->reason,
             'details' => $request->details,
-            'status' => 'pending',
+            'status' => 'open',
         ]);
 
         return redirect()->route('member.reports.index')

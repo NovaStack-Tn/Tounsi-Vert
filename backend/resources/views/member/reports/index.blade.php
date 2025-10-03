@@ -31,13 +31,13 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ $status == 'pending' ? 'active' : '' }}" href="{{ route('member.reports.index', ['status' => 'pending']) }}">
-                        <i class="bi bi-clock me-1"></i>Pending
+                    <a class="nav-link {{ $status == 'open' ? 'active' : '' }}" href="{{ route('member.reports.index', ['status' => 'open']) }}">
+                        <i class="bi bi-clock me-1"></i>Open
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ $status == 'in_progress' ? 'active' : '' }}" href="{{ route('member.reports.index', ['status' => 'in_progress']) }}">
-                        <i class="bi bi-gear me-1"></i>In Progress
+                    <a class="nav-link {{ $status == 'in_review' ? 'active' : '' }}" href="{{ route('member.reports.index', ['status' => 'in_review']) }}">
+                        <i class="bi bi-gear me-1"></i>In Review
                     </a>
                 </li>
                 <li class="nav-item">
@@ -46,8 +46,8 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ $status == 'rejected' ? 'active' : '' }}" href="{{ route('member.reports.index', ['status' => 'rejected']) }}">
-                        <i class="bi bi-x-circle me-1"></i>Rejected
+                    <a class="nav-link {{ $status == 'dismissed' ? 'active' : '' }}" href="{{ route('member.reports.index', ['status' => 'dismissed']) }}">
+                        <i class="bi bi-x-circle me-1"></i>Dismissed
                     </a>
                 </li>
             </ul>
@@ -100,21 +100,21 @@
                         </div>
                         <div class="col-md-4 text-end">
                             <div class="mb-2">
-                                @if($report->status == 'pending')
+                                @if($report->status == 'open')
                                     <span class="badge bg-warning px-3 py-2">
-                                        <i class="bi bi-clock me-1"></i>Pending
+                                        <i class="bi bi-clock me-1"></i>Open
                                     </span>
-                                @elseif($report->status == 'in_progress')
+                                @elseif($report->status == 'in_review')
                                     <span class="badge bg-primary px-3 py-2">
-                                        <i class="bi bi-gear me-1"></i>In Progress
+                                        <i class="bi bi-gear me-1"></i>In Review
                                     </span>
                                 @elseif($report->status == 'resolved')
                                     <span class="badge bg-success px-3 py-2">
                                         <i class="bi bi-check-circle me-1"></i>Resolved
                                     </span>
-                                @elseif($report->status == 'rejected')
+                                @elseif($report->status == 'dismissed')
                                     <span class="badge bg-danger px-3 py-2">
-                                        <i class="bi bi-x-circle me-1"></i>Rejected
+                                        <i class="bi bi-x-circle me-1"></i>Dismissed
                                     </span>
                                 @endif
                             </div>
@@ -132,14 +132,14 @@
                     <i class="bi bi-flag" style="font-size: 5rem; opacity: 0.2;"></i>
                     @if($status == 'all')
                         <p class="text-muted mt-3">You haven't submitted any reports yet.</p>
-                    @elseif($status == 'pending')
-                        <p class="text-muted mt-3">No pending reports.</p>
-                    @elseif($status == 'in_progress')
-                        <p class="text-muted mt-3">No reports in progress.</p>
+                    @elseif($status == 'open')
+                        <p class="text-muted mt-3">No open reports.</p>
+                    @elseif($status == 'in_review')
+                        <p class="text-muted mt-3">No reports in review.</p>
                     @elseif($status == 'resolved')
                         <p class="text-muted mt-3">No resolved reports.</p>
                     @else
-                        <p class="text-muted mt-3">No rejected reports.</p>
+                        <p class="text-muted mt-3">No dismissed reports.</p>
                     @endif
                 </div>
             @endforelse
