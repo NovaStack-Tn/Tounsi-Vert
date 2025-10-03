@@ -12,15 +12,26 @@ class DashboardController extends Controller
         $this->middleware('auth');
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         
-        // Get all participations with relationships
-        $participations = $user->participations()
-            ->with(['event.organization', 'event.category', 'donation'])
+        // Get filter type from request
+        $filterType = $request->get('type', 'all');
+        
+        // Get all participations with relationships and optional filter
+        $participationsQuery = $user->participations()
+            ->with(['event.organization', 'event.category', 'donation']);
+        
+        // Apply filter if not 'all'
+        if ($filterType !== 'all') {
+            $participationsQuery->where('type', $filterType);
+        }
+        
+        $participations = $participationsQuery
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->appends(['type' => $filterType]);
 
         // Count total events attended
         $eventsAttended = $user->participations()
@@ -40,6 +51,9 @@ class DashboardController extends Controller
         $totalDonationsAmount = $donations->sum(function ($participation) {
             return $participation->donation->amount ?? 0;
         });
+
+        // Count followed organizations
+        $followedOrganizations = $user->follows()->count();
 
         // Score breakdown calculation
         $scoreBreakdown = [
@@ -67,7 +81,9 @@ class DashboardController extends Controller
             'donations',
             'totalDonationsCount',
             'totalDonationsAmount',
-            'scoreBreakdown'
+            'followedOrganizations',
+            'scoreBreakdown',
+            'filterType'
         ));
     }
 }
