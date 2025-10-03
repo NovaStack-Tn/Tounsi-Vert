@@ -22,6 +22,11 @@ class OrganizerDashboardController extends Controller
                 ->with('info', 'Please create your organization first.');
         }
         
+        // Check if organization is blocked
+        if ($organization->is_blocked) {
+            return view('organizer.blocked', compact('organization'));
+        }
+        
         // Calculate comprehensive stats
         $stats = [
             'total_events' => $organization->events->count(),

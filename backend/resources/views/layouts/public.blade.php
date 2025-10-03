@@ -158,7 +158,7 @@
                                         </a>
                                     </li>
                                 @endif
-                                @if(auth()->user()->isOrganizer() || auth()->user()->isAdmin())
+                                @if(auth()->user()->isOrganizer() && !auth()->user()->isAdmin())
                                     <li><hr class="dropdown-divider"></li>
                                     <li class="dropdown-header">Organizer</li>
                                     <li>
@@ -181,12 +181,14 @@
                                         </a>
                                     </li>
                                 @endif
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('member.reports.index') }}">
-                                        <i class="bi bi-flag me-2"></i>My Reports
-                                    </a>
-                                </li>
+                                @if(!auth()->user()->isAdmin())
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('member.reports.index') }}">
+                                            <i class="bi bi-flag me-2"></i>My Reports
+                                        </a>
+                                    </li>
+                                @endif
                                 <li>
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf

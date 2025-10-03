@@ -122,6 +122,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Reports
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+    Route::post('/reports/{report}/resolve', [AdminReportController::class, 'resolve'])->name('reports.resolve');
+    Route::post('/reports/{report}/dismiss', [AdminReportController::class, 'dismiss'])->name('reports.dismiss');
+    Route::post('/reports/{report}/suspend-organization', [AdminReportController::class, 'suspendOrganization'])->name('reports.suspendOrganization');
     Route::patch('/reports/{report}/status', [AdminReportController::class, 'updateStatus'])->name('reports.updateStatus');
     
     // Organization Requests

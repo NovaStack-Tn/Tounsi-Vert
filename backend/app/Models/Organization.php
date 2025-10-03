@@ -22,10 +22,12 @@ class Organization extends Model
         'phone_number',
         'logo_path',
         'is_verified',
+        'is_blocked',
     ];
 
     protected $casts = [
         'is_verified' => 'boolean',
+        'is_blocked' => 'boolean',
     ];
 
     public function owner()
