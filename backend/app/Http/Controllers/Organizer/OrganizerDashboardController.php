@@ -138,4 +138,85 @@ class OrganizerDashboardController extends Controller
             'recentReviews'
         ));
     }
+    
+    public function community()
+    {
+        $user = auth()->user();
+        
+        // Get user's organization
+        $organization = $user->organizationsOwned()->first();
+        
+        if (!$organization) {
+            return redirect()->route('organizer.dashboard')
+                ->with('error', 'Organization not found.');
+        }
+        
+        // Get all followers with pagination
+        $followers = $organization->followers()
+            ->withCount('participations')
+            ->withCount(['participations as events_attended_count' => function ($query) use ($organization) {
+                $query->where('type', 'attend')
+                    ->whereHas('event', function ($q) use ($organization) {
+                        $q->where('organization_id', $organization->id);
+                    });
+            }])
+            ->latest('organization_followers.created_at')
+            ->paginate(20);
+        
+        // Stats
+        $stats = [
+            'total_followers' => $organization->followers->count(),
+            'new_this_month' => $organization->followers()
+                ->whereYear('organization_followers.created_at', now()->year)
+                ->whereMonth('organization_followers.created_at', now()->month)
+                ->count(),
+        ];
+        
+        return view('organizer.community', compact('organization', 'followers', 'stats'));
+    }
+    
+    public function donations()
+    {
+        $user = auth()->user();
+        
+        // Get user's organization
+        $organization = $user->organizationsOwned()->first();
+        
+        if (!$organization) {
+            return redirect()->route('organizer.dashboard')
+                ->with('error', 'Organization not found.');
+        }
+        
+        // Get all donations from organization's events
+        $donations = \App\Models\Donation::whereHas('event', function ($query) use ($organization) {
+                $query->where('organization_id', $organization->id);
+            })
+            ->with(['participation.user', 'event'])
+            ->where('status', 'succeeded')
+            ->latest('paid_at')
+            ->paginate(20);
+        
+        // Stats
+        $stats = [
+            'total_amount' => \App\Models\Donation::whereHas('event', function ($query) use ($organization) {
+                    $query->where('organization_id', $organization->id);
+                })
+                ->where('status', 'succeeded')
+                ->sum('amount'),
+            'total_count' => \App\Models\Donation::whereHas('event', function ($query) use ($organization) {
+                    $query->where('organization_id', $organization->id);
+                })
+                ->where('status', 'succeeded')
+                ->count(),
+            'this_month' => \App\Models\Donation::whereHas('event', function ($query) use ($organization) {
+                    $query->where('organization_id', $organization->id);
+                })
+                ->where('status', 'succeeded')
+                ->whereYear('paid_at', now()->year)
+                ->whereMonth('paid_at', now()->month)
+                ->sum('amount'),
+        ];
+        
+        return view('organizer.donations', compact('organization', 'donations', 'stats'));
+    }
 }

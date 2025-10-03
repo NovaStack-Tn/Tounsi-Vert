@@ -97,6 +97,10 @@ Route::middleware(['auth'])->prefix('organizer')->name('organizer.')->group(func
     
     // Events
     Route::resource('events', OrganizerEventController::class);
+    
+    // Community & Donations
+    Route::get('/community', [OrganizerDashboardController::class, 'community'])->name('community');
+    Route::get('/donations', [OrganizerDashboardController::class, 'donations'])->name('donations');
 });
 
 /*

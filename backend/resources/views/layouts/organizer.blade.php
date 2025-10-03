@@ -136,21 +136,27 @@
                         <span>My Events</span>
                     </a>
                 </li>
+                <li>
+                    <a href="{{ route('organizer.community') }}" class="{{ request()->routeIs('organizer.community') ? 'active' : '' }}">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Community</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('organizer.donations') }}" class="{{ request()->routeIs('organizer.donations') ? 'active' : '' }}">
+                        <i class="bi bi-cash-stack"></i>
+                        <span>Donations</span>
+                    </a>
+                </li>
             </ul>
 
             <hr style="border-color: rgba(255,255,255,0.1); margin: 20px;">
 
             <ul class="sidebar-menu">
                 <li>
-                    <a href="{{ route('events.index') }}">
-                        <i class="bi bi-calendar-check"></i>
-                        <span>Browse Events</span>
-                    </a>
-                </li>
-                <li>
                     <a href="{{ route('home') }}">
-                        <i class="bi bi-house-door"></i>
-                        <span>Back to Home</span>
+                        <i class="bi bi-arrow-left-circle"></i>
+                        <span>Return To TounsiVert</span>
                     </a>
                 </li>
                 <li>
