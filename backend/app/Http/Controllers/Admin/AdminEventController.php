@@ -24,7 +24,7 @@ class AdminEventController extends Controller
                 $q->where('type', 'attend');
             }])
             ->withCount('reviews')
-            ->withAvg('reviews', 'rating')
+            ->withAvg('reviews', 'rate')
             ->withSum('donations', 'amount');
         
         if ($organizationFilter !== 'all') {
@@ -64,7 +64,7 @@ class AdminEventController extends Controller
         $stats = [
             'total_attendees' => $event->participations->where('type', 'attend')->count(),
             'total_reviews' => $event->reviews->count(),
-            'average_rating' => $event->reviews->avg('rating'),
+            'average_rating' => $event->reviews->avg('rate'),
             'total_donations' => $event->donations->where('status', 'succeeded')->sum('amount'),
             'total_donors' => $event->donations->where('status', 'succeeded')->unique('participation_id')->count(),
         ];
@@ -84,10 +84,10 @@ class AdminEventController extends Controller
     public function leaderboard()
     {
         // Top events by average rating
-        $topRatedEvents = Event::withAvg('reviews', 'rating')
+        $topRatedEvents = Event::withAvg('reviews', 'rate')
             ->withCount('reviews')
             ->having('reviews_count', '>', 0)
-            ->orderByDesc('reviews_avg_rating')
+            ->orderByDesc('reviews_avg_rate')
             ->limit(10)
             ->get();
 

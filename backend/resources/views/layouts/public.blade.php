@@ -127,6 +127,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link px-3 {{ request()->routeIs('leaderboard') ? 'active fw-bold' : '' }}" href="{{ route('leaderboard') }}">
+                            <i class="bi bi-trophy-fill me-1"></i>Leaderboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link px-3 {{ request()->routeIs('about') ? 'active fw-bold' : '' }}" href="{{ route('about') }}">
                             <i class="bi bi-info-circle me-1"></i>About
                         </a>

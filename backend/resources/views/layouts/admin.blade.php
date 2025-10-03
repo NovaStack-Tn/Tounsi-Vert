@@ -128,15 +128,15 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('admin.reports.index') }}" class="{{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
-                        <i class="bi bi-flag"></i>
-                        <span>Reports</span>
+                    <a href="{{ route('admin.events.index') }}" class="{{ request()->routeIs('admin.events.*') ? 'active' : '' }}">
+                        <i class="bi bi-calendar-event"></i>
+                        <span>All Events</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('events.index') }}">
-                        <i class="bi bi-calendar-event"></i>
-                        <span>All Events</span>
+                    <a href="{{ route('admin.reports.index') }}" class="{{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                        <i class="bi bi-flag"></i>
+                        <span>Reports</span>
                     </a>
                 </li>
             </ul>
