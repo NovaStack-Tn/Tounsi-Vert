@@ -148,18 +148,6 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('organizations.index') }}">
-                        <i class="bi bi-eye"></i>
-                        <span>Public View</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('dashboard') }}">
-                        <i class="bi bi-person-circle"></i>
-                        <span>Member Dashboard</span>
-                    </a>
-                </li>
-                <li>
                     <a href="{{ route('home') }}">
                         <i class="bi bi-house-door"></i>
                         <span>Back to Home</span>
