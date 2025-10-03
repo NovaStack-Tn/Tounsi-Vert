@@ -44,4 +44,16 @@ class ReviewController extends Controller
             return back()->with('error', 'You have already reviewed this event.');
         }
     }
+
+    public function destroy(Review $review)
+    {
+        // Check if the review belongs to the authenticated user
+        if ($review->user_id !== auth()->id()) {
+            return back()->with('error', 'You can only delete your own reviews.');
+        }
+
+        $review->delete();
+
+        return back()->with('success', 'Review deleted successfully!');
+    }
 }

@@ -53,8 +53,13 @@ Route::middleware('auth')->group(function () {
     
     // Participations
     Route::post('/events/{event}/attend', [ParticipationController::class, 'attend'])->name('events.attend');
+    Route::post('/events/{event}/unjoin', [ParticipationController::class, 'unjoin'])->name('events.unjoin');
     Route::post('/events/{event}/follow', [ParticipationController::class, 'follow'])->name('events.follow');
     Route::post('/events/{event}/share', [ParticipationController::class, 'share'])->name('events.share');
+    
+    // Organization Follow/Unfollow
+    Route::post('/organizations/{organization}/follow', [OrganizationController::class, 'follow'])->name('organizations.follow');
+    Route::post('/organizations/{organization}/unfollow', [OrganizationController::class, 'unfollow'])->name('organizations.unfollow');
     
     // Donations
     Route::get('/events/{event}/donate', [DonationController::class, 'create'])->name('donations.create');
