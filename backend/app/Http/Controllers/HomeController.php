@@ -24,7 +24,15 @@ class HomeController extends Controller
             ->take(6)
             ->get();
 
-        return view('home', compact('upcomingEvents', 'featuredOrganizations'));
+        // Statistics
+        $stats = [
+            'total_events' => Event::where('is_published', true)->count(),
+            'total_organizations' => Organization::where('is_verified', true)->count(),
+            'total_attendees' => \DB::table('participations')->where('type', 'attend')->distinct('user_id')->count(),
+            'total_donations' => \DB::table('donations')->where('status', 'succeeded')->sum('amount'),
+        ];
+
+        return view('home', compact('upcomingEvents', 'featuredOrganizations', 'stats'));
     }
 
     public function about()

@@ -120,39 +120,48 @@
     <div class="row">
         @forelse($events as $event)
             <div class="col-md-4 mb-4">
-                <div class="card h-100 card-hover">
-                    @if($event->poster_path)
-                        <img src="{{ Storage::url($event->poster_path) }}" class="card-img-top" alt="{{ $event->title }}" style="height: 200px; object-fit: cover;">
-                    @else
-                        <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
-                            <i class="bi bi-calendar-event text-white" style="font-size: 4rem;"></i>
+                <div class="event-card card h-100">
+                    <div style="overflow: hidden; border-radius: 20px 20px 0 0;">
+                        @if($event->poster_path)
+                            <img src="{{ Storage::url($event->poster_path) }}" class="event-img w-100" alt="{{ $event->title }}">
+                        @else
+                            <div class="event-img bg-gradient d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);">
+                                <i class="bi bi-calendar-event text-white" style="font-size: 4rem;"></i>
+                            </div>
+                        @endif
+                    </div>
+                    <div class="card-body d-flex flex-column p-4">
+                        <div class="mb-3">
+                            <span class="event-badge badge bg-success">{{ $event->category->name }}</span>
+                            <span class="event-badge badge bg-info ms-1">{{ ucfirst($event->type) }}</span>
                         </div>
-                    @endif
-                    <div class="card-body d-flex flex-column">
-                        <div class="mb-2">
-                            <span class="badge bg-primary">{{ $event->category->name }}</span>
-                            <span class="badge bg-secondary">{{ ucfirst($event->type) }}</span>
-                        </div>
-                        <h5 class="card-title">{{ $event->title }}</h5>
-                        <p class="card-text text-muted small">
-                            <i class="bi bi-building"></i> {{ $event->organization->name }}
+                        <h5 class="card-title fw-bold mb-3">{{ Str::limit($event->title, 50) }}</h5>
+                        <p class="card-text text-muted small mb-2">
+                            <i class="bi bi-building text-success me-1"></i>{{ $event->organization->name }}
                         </p>
-                        <p class="card-text text-muted small">
-                            <i class="bi bi-calendar"></i> {{ $event->start_at->format('M d, Y - H:i') }}
+                        <p class="card-text text-muted small mb-2">
+                            <i class="bi bi-calendar text-success me-1"></i>{{ $event->start_at->format('M d, Y - H:i') }}
                         </p>
-                        <p class="card-text text-muted small">
-                            <i class="bi bi-geo-alt"></i> {{ $event->city }}, {{ $event->region }}
+                        <p class="card-text text-muted small mb-3">
+                            <i class="bi bi-geo-alt text-success me-1"></i>{{ $event->city }}, {{ $event->region }}
                         </p>
                         <div class="mt-auto">
-                            <a href="{{ route('events.show', $event) }}" class="btn btn-outline-primary btn-sm w-100">View Details</a>
+                            <a href="{{ route('events.show', $event) }}" class="btn btn-success w-100 search-btn">
+                                <i class="bi bi-arrow-right-circle me-2"></i>View Details
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         @empty
             <div class="col-12">
-                <div class="alert alert-info text-center">
-                    <i class="bi bi-info-circle"></i> No events found matching your criteria.
+                <div class="alert alert-warning text-center p-5" style="border-radius: 20px;">
+                    <i class="bi bi-calendar-x" style="font-size: 4rem; opacity: 0.3;"></i>
+                    <h5 class="mt-3">No events found matching your criteria</h5>
+                    <p class="text-muted">Try adjusting your filters or browse all events</p>
+                    <a href="{{ route('events.index') }}" class="btn btn-success search-btn mt-2">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>View All Events
+                    </a>
                 </div>
             </div>
         @endforelse
