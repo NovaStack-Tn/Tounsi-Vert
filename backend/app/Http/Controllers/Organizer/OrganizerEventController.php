@@ -16,27 +16,46 @@ class OrganizerEventController extends Controller
 
     public function index()
     {
-        $organizations = auth()->user()->organizationsOwned;
-        $events = Event::whereIn('organization_id', $organizations->pluck('id'))
-            ->with('category')
+        // Get the user's single organization
+        $organization = auth()->user()->organizationsOwned()->first();
+        
+        // If no organization, redirect to create one
+        if (!$organization) {
+            return redirect()->route('organizer.organizations.create')
+                ->with('info', 'Please create your organization first before creating events.');
+        }
+        
+        // Get all events for the user's organization
+        $events = Event::where('organization_id', $organization->id)
+            ->with(['category', 'organization', 'participations'])
             ->latest()
             ->paginate(15);
 
-        return view('organizer.events.index', compact('events'));
+        return view('organizer.events.index', compact('events', 'organization'));
     }
 
     public function create()
     {
-        $organizations = auth()->user()->organizationsOwned;
+        // Get the user's single organization
+        $organization = auth()->user()->organizationsOwned()->first();
+        
+        // If no organization, redirect to create one
+        if (!$organization) {
+            return redirect()->route('organizer.organizations.create')
+                ->with('info', 'Please create your organization first before creating events.');
+        }
+        
         $categories = EventCategory::all();
 
-        return view('organizer.events.create', compact('organizations', 'categories'));
+        return view('organizer.events.create', compact('organization', 'categories'));
     }
 
     public function store(Request $request)
     {
+        // Get the user's organization
+        $organization = auth()->user()->organizationsOwned()->firstOrFail();
+        
         $request->validate([
-            'organization_id' => 'required|exists:organizations,id',
             'event_category_id' => 'required|exists:event_categories,id',
             'type' => 'required|in:online,onsite,hybrid',
             'title' => 'required|string|max:150',
@@ -52,10 +71,8 @@ class OrganizerEventController extends Controller
             'poster_path' => 'nullable|image|max:2048',
         ]);
 
-        // Check ownership
-        $organization = auth()->user()->organizationsOwned()->findOrFail($request->organization_id);
-
         $data = $request->except('poster_path');
+        $data['organization_id'] = $organization->id;
 
         if ($request->hasFile('poster_path')) {
             $data['poster_path'] = $request->file('poster_path')->store('posters', 'public');
@@ -81,10 +98,10 @@ class OrganizerEventController extends Controller
     {
         $this->authorize('update', $event);
         
-        $organizations = auth()->user()->organizationsOwned;
+        $organization = auth()->user()->organizationsOwned()->first();
         $categories = EventCategory::all();
 
-        return view('organizer.events.edit', compact('event', 'organizations', 'categories'));
+        return view('organizer.events.edit', compact('event', 'organization', 'categories'));
     }
 
     public function update(Request $request, Event $event)

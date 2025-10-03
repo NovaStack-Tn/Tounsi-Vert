@@ -114,8 +114,7 @@
         <!-- Sidebar -->
         <aside class="organizer-sidebar">
             <a href="{{ route('organizer.dashboard') }}" class="sidebar-brand">
-                <img src="{{ asset('logo.png') }}" alt="TounsiVert Logo" style="height: 35px; width: auto; margin-right: 10px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
-                <span>Organizer Panel</span>
+                <img src="{{ asset('logo.png') }}" alt="TounsiVert Logo" style="height: 80px; width: auto; margin-right: 50px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
             </a>
             
             <ul class="sidebar-menu">
@@ -128,7 +127,7 @@
                 <li>
                     <a href="{{ route('organizer.organizations.index') }}" class="{{ request()->routeIs('organizer.organizations.*') ? 'active' : '' }}">
                         <i class="bi bi-building"></i>
-                        <span>My Organizations</span>
+                        <span>My Organization</span>
                     </a>
                 </li>
                 <li>

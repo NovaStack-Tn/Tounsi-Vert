@@ -82,8 +82,12 @@ Route::middleware(['auth'])->prefix('organizer')->name('organizer.')->group(func
     // Dashboard
     Route::get('/dashboard', [OrganizerDashboardController::class, 'index'])->name('dashboard');
     
-    // Organizations
-    Route::resource('organizations', OrganizerOrganizationController::class);
+    // Organizations (single organization per user)
+    Route::get('/organizations', [OrganizerOrganizationController::class, 'index'])->name('organizations.index');
+    Route::get('/organizations/create', [OrganizerOrganizationController::class, 'create'])->name('organizations.create');
+    Route::post('/organizations', [OrganizerOrganizationController::class, 'store'])->name('organizations.store');
+    Route::get('/organizations/edit', [OrganizerOrganizationController::class, 'edit'])->name('organizations.edit');
+    Route::put('/organizations', [OrganizerOrganizationController::class, 'update'])->name('organizations.update');
     
     // Events
     Route::resource('events', OrganizerEventController::class);

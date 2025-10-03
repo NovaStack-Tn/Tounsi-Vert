@@ -16,9 +16,19 @@ class OrganizerOrganizationController extends Controller
 
     public function index()
     {
-        $organizations = auth()->user()->organizationsOwned()->with('category')->get();
+        // Get the user's single organization
+        $organization = auth()->user()->organizationsOwned()->with(['category', 'socialLinks', 'events', 'followers'])->first();
+        
+        // If user doesn't have an organization yet, redirect to create
+        if (!$organization) {
+            return redirect()->route('organizer.organizations.create')
+                ->with('info', 'Please create your organization to get started.');
+        }
+        
+        $followersCount = $organization->followers->count();
+        $followers = $organization->followers()->orderBy('organization_followers.created_at', 'desc')->get();
 
-        return view('organizer.organizations.index', compact('organizations'));
+        return view('organizer.organizations.show', compact('organization', 'followersCount', 'followers'));
     }
 
     public function create()
@@ -51,20 +61,26 @@ class OrganizerOrganizationController extends Controller
 
         $organization = Organization::create($data);
 
-        return redirect()->route('organizer.organizations.show', $organization)->with('success', 'Organization created successfully!');
+        return redirect()->route('organizer.organizations.index')->with('success', 'Organization created successfully!');
     }
 
     public function show(Organization $organization)
     {
         $this->authorize('view', $organization);
         
-        $organization->load(['category', 'socialLinks', 'events']);
+        $organization->load(['category', 'socialLinks', 'events', 'followers']);
+        
+        $followersCount = $organization->followers->count();
+        $followers = $organization->followers()->orderBy('organization_followers.created_at', 'desc')->get();
 
-        return view('organizer.organizations.show', compact('organization'));
+        return view('organizer.organizations.show', compact('organization', 'followersCount', 'followers'));
     }
 
-    public function edit(Organization $organization)
+    public function edit()
     {
+        // Get the user's organization
+        $organization = auth()->user()->organizationsOwned()->firstOrFail();
+        
         $this->authorize('update', $organization);
         
         $categories = OrgCategory::all();
@@ -72,8 +88,11 @@ class OrganizerOrganizationController extends Controller
         return view('organizer.organizations.edit', compact('organization', 'categories'));
     }
 
-    public function update(Request $request, Organization $organization)
+    public function update(Request $request)
     {
+        // Get the user's organization
+        $organization = auth()->user()->organizationsOwned()->firstOrFail();
+        
         $this->authorize('update', $organization);
 
         $request->validate([
@@ -96,6 +115,6 @@ class OrganizerOrganizationController extends Controller
 
         $organization->update($data);
 
-        return redirect()->route('organizer.organizations.show', $organization)->with('success', 'Organization updated successfully!');
+        return redirect()->route('organizer.organizations.index')->with('success', 'Organization updated successfully!');
     }
 }

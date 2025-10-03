@@ -139,23 +139,11 @@
                         <span>All Events</span>
                     </a>
                 </li>
-                <li>
-                    <a href="{{ route('organizations.index') }}">
-                        <i class="bi bi-eye"></i>
-                        <span>Public View</span>
-                    </a>
-                </li>
             </ul>
 
             <hr style="border-color: rgba(255,255,255,0.1); margin: 20px;">
 
             <ul class="sidebar-menu">
-                <li>
-                    <a href="{{ route('dashboard') }}">
-                        <i class="bi bi-person-circle"></i>
-                        <span>My Profile</span>
-                    </a>
-                </li>
                 <li>
                     <a href="{{ route('home') }}">
                         <i class="bi bi-house-door"></i>
