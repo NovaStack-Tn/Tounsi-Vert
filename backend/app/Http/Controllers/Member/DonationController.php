@@ -9,7 +9,7 @@ use App\Models\Participation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class DonationController extends Controller
+class  DonationController extends Controller
 {
     public function __construct()
     {
