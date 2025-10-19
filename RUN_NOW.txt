@@ -1,0 +1,224 @@
+================================================================================
+ 🚀 TOUNSIVERT - RUN THE APPLICATION NOW!
+================================================================================
+
+Follow these commands in order. Copy and paste each one.
+
+================================================================================
+ STEP 1: CREATE DATABASE
+================================================================================
+
+Open MySQL (Command Line, phpMyAdmin, or MySQL Workbench) and run:
+
+    CREATE DATABASE tounsivert CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+If you're using command line:
+    mysql -u root -p
+    (enter password if you have one)
+    CREATE DATABASE tounsivert CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    exit;
+
+
+================================================================================
+ STEP 2: OPEN POWERSHELL/TERMINAL
+================================================================================
+
+Navigate to backend folder:
+
+    cd d:/TounsiVert/backend
+
+
+================================================================================
+ STEP 3: RUN MIGRATIONS
+================================================================================
+
+    php artisan migrate
+
+
+You should see:
+    Migration table created successfully.
+    Migrating: 2014_10_12_000000_create_users_table
+    Migrated:  2014_10_12_000000_create_users_table
+    ... (11 tables total)
+
+
+================================================================================
+ STEP 4: SEED DATABASE WITH DEMO DATA
+================================================================================
+
+    php artisan db:seed
+
+
+You should see:
+    Seeding: Database\Seeders\OrgCategorySeeder
+    Seeding: Database\Seeders\EventCategorySeeder
+    Database seeding completed successfully.
+
+
+================================================================================
+ STEP 5: CREATE STORAGE LINK
+================================================================================
+
+    php artisan storage:link
+
+
+You should see:
+    The [public/storage] link has been connected to [storage/app/public].
+
+
+================================================================================
+ STEP 6: INSTALL NPM DEPENDENCIES
+================================================================================
+
+    npm install
+
+
+This will take 1-2 minutes. Wait for it to complete.
+
+
+================================================================================
+ STEP 7: START FRONTEND BUILD (Keep this terminal open!)
+================================================================================
+
+    npm run dev
+
+
+You should see:
+    VITE v5.x.x  ready in xxx ms
+    ➜  Local:   http://localhost:5173/
+
+⚠️ IMPORTANT: Keep this terminal running! Open a NEW terminal for next step.
+
+
+================================================================================
+ STEP 8: START LARAVEL SERVER (New Terminal)
+================================================================================
+
+Open a NEW PowerShell/Terminal window and run:
+
+    cd d:/TounsiVert/backend
+    php artisan serve
+
+
+You should see:
+    Starting Laravel development server: http://127.0.0.1:8000
+    [Press Ctrl+C to quit]
+
+⚠️ IMPORTANT: Keep this terminal running too!
+
+
+================================================================================
+ STEP 9: OPEN YOUR BROWSER
+================================================================================
+
+Go to: http://localhost:8000
+
+You should see the TounsiVert homepage! 🎉
+
+
+================================================================================
+ STEP 10: LOGIN WITH DEMO ACCOUNTS
+================================================================================
+
+Click "Login" and use one of these accounts:
+
+ADMIN ACCOUNT:
+    Email:    admin@tounsivert.tn
+    Password: password
+
+ORGANIZER ACCOUNT:
+    Email:    organizer@tounsivert.tn
+    Password: password
+
+MEMBER ACCOUNT:
+    Email:    member@tounsivert.tn
+    Password: password
+
+
+================================================================================
+ ✅ SUCCESS! YOUR APPLICATION IS RUNNING!
+================================================================================
+
+What to explore:
+  ✓ Browse events: http://localhost:8000/events
+  ✓ Browse organizations: http://localhost:8000/organizations
+  ✓ Member dashboard: http://localhost:8000/dashboard
+  ✓ Organizer panel: http://localhost:8000/organizer/events
+  ✓ Admin panel: http://localhost:8000/admin/dashboard
+
+To stop the application:
+  • Press Ctrl+C in both terminals (npm and php artisan serve)
+
+
+================================================================================
+ 🐛 TROUBLESHOOTING
+================================================================================
+
+❌ ERROR: "SQLSTATE[HY000] [1045] Access denied"
+    FIX: Update database password in .env file
+    Open: d:/TounsiVert/backend/.env
+    Change: DB_PASSWORD= (to your MySQL password)
+    Then run: php artisan migrate again
+
+❌ ERROR: "Base table or view not found"
+    FIX: Run migrations again
+    php artisan migrate:fresh --seed
+
+❌ ERROR: "Class 'OrgCategorySeeder' not found"
+    FIX: Run this, then seed again
+    composer dump-autoload
+    php artisan db:seed
+
+❌ ERROR: "Vite manifest not found"
+    FIX: Make sure npm run dev is running
+
+❌ ERROR: "Permission denied" on Windows
+    FIX: Run PowerShell as Administrator, then:
+    icacls storage /grant "Users:(OI)(CI)F" /T
+    icacls bootstrap/cache /grant "Users:(OI)(CI)F" /T
+
+
+================================================================================
+ 📚 DOCUMENTATION
+================================================================================
+
+  • Quick Start Guide:  QUICK_START.md
+  • Setup Guide:        SETUP_GUIDE.md
+  • API Docs:           backend/API_DOCUMENTATION.md
+  • Project Summary:    PROJECT_SUMMARY.md
+  • README:             README.md
+
+
+================================================================================
+ 🎯 NEXT STEPS AFTER SETUP
+================================================================================
+
+1. Explore the application with different user roles
+2. Create test organizations as organizer
+3. Create test events
+4. Test participation features (join, donate, review)
+5. Test admin features (verify organizations, handle reports)
+
+Then read the documentation to understand the codebase structure!
+
+
+================================================================================
+ ⚡ QUICK REFERENCE
+================================================================================
+
+Stop Servers:         Ctrl+C (in both terminals)
+Restart Server:       php artisan serve
+Rebuild Frontend:     npm run dev
+Clear Cache:          php artisan cache:clear
+Fresh Database:       php artisan migrate:fresh --seed
+
+Homepage:             http://localhost:8000
+Login:                http://localhost:8000/login
+Register:             http://localhost:8000/register
+Dashboard:            http://localhost:8000/dashboard
+
+
+================================================================================
+
+🎉 ENJOY YOUR TOUNSIVERT PLATFORM! 🌱
+
