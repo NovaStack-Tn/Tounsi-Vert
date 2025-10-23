@@ -31,12 +31,31 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-4">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <i class="bi bi-trophy text-warning" style="font-size: 3rem;"></i>
-                    <h3 class="mt-3">{{ $user->score }}</h3>
-                    <p class="text-muted">Impact Points</p>
+
+        <!-- Donations Card -->
+        <div class="col-md-3">
+            <div class="stat-card card shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-heart-fill stat-icon text-danger"></i>
+                    <h2 class="mt-3 mb-2">${{ number_format($totalDonationsAmount, 2) }}</h2>
+                    <p class="text-muted mb-3">{{ $totalDonationsCount }} Donations Made</p>
+                    <a href="{{ route('donations.index') }}" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-gear me-1"></i>Manage Donations
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Followed Organizations Card -->
+        <div class="col-md-3">
+            <div class="stat-card card shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-building-fill stat-icon text-primary"></i>
+                    <h2 class="mt-3 mb-2">{{ $followedOrganizations }}</h2>
+                    <p class="text-muted mb-3">Organizations Following</p>
+                    <a href="{{ route('organizations.index') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-search me-1"></i>Browse More
+                    </a>
                 </div>
             </div>
         </div>

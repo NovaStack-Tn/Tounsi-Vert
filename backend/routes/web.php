@@ -56,9 +56,27 @@ Route::middleware('auth')->group(function () {
     Route::post('/events/{event}/follow', [ParticipationController::class, 'follow'])->name('events.follow');
     Route::post('/events/{event}/share', [ParticipationController::class, 'share'])->name('events.share');
     
-    // Donations
-    Route::get('/events/{event}/donate', [DonationController::class, 'create'])->name('donations.create');
-    Route::post('/events/{event}/donate', [DonationController::class, 'store'])->name('donations.store');
+    // Organization Follow/Unfollow
+    Route::post('/organizations/{organization}/follow', [OrganizationController::class, 'follow'])->name('organizations.follow');
+    Route::post('/organizations/{organization}/unfollow', [OrganizationController::class, 'unfollow'])->name('organizations.unfollow');
+    
+    // Donations - Full CRUD
+    Route::get('/donations', [DonationController::class, 'index'])->name('donations.index');
+    Route::get('/donations/statistics', [DonationController::class, 'statistics'])->name('donations.statistics');
+    Route::get('/donations/create', [DonationController::class, 'create'])->name('donations.create');
+    Route::post('/donations', [DonationController::class, 'store'])->name('donations.store');
+    Route::get('/donations/{donation}', [DonationController::class, 'show'])->name('donations.show');
+    Route::get('/donations/{donation}/edit', [DonationController::class, 'edit'])->name('donations.edit');
+    Route::put('/donations/{donation}', [DonationController::class, 'update'])->name('donations.update');
+    Route::delete('/donations/{donation}', [DonationController::class, 'destroy'])->name('donations.destroy');
+    
+    // Donation Export
+    Route::get('/donations-export/pdf', [DonationController::class, 'exportPdf'])->name('donations.export.pdf');
+    Route::get('/donations-export/csv', [DonationController::class, 'exportCsv'])->name('donations.export.csv');
+    
+    // Legacy event donation routes (for backwards compatibility)
+    Route::get('/events/{event}/donate', [DonationController::class, 'createForEvent'])->name('events.donate.create');
+    Route::post('/events/{event}/donate', [DonationController::class, 'storeForEvent'])->name('events.donate.store');
     
     // Reviews
     Route::post('/events/{event}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
