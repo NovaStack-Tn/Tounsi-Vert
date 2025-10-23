@@ -1,0 +1,135 @@
+groups:
+  - name: tounsivert_application_alerts
+    interval: 30s
+    rules:
+      # High Error Rate Alert
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(tounsivert_http_requests_total{status=~"5.."}[5m]))
+          / sum(rate(tounsivert_http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          component: application
+        annotations:
+          summary: "High error rate detected on TounsiVert"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+
+      # High Request Latency
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(tounsivert_http_request_duration_seconds_bucket[5m]))
+          ) > 2
+        for: 10m
+        labels:
+          severity: warning
+          component: application
+        annotations:
+          summary: "High request latency on TounsiVert"
+          description: "95th percentile latency is {{ $value }}s (threshold: 2s)"
+
+      # Low Request Rate (Possible Downtime)
+      - alert: LowRequestRate
+        expr: |
+          sum(rate(tounsivert_http_requests_total[5m])) < 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: application
+        annotations:
+          summary: "Unusually low request rate"
+          description: "Request rate is {{ $value }} req/s (might indicate downtime)"
+
+  - name: tounsivert_system_alerts
+    interval: 30s
+    rules:
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: |
+          100 - (avg(irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High CPU usage on host"
+          description: "CPU usage is {{ $value | humanize }}% (threshold: 80%)"
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: |
+          (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.9
+        for: 5m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "High memory usage on host"
+          description: "Memory usage is {{ $value | humanizePercentage }} (threshold: 90%)"
+
+      # Low Disk Space
+      - alert: LowDiskSpace
+        expr: |
+          (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"}) < 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "Low disk space on {{ $labels.mountpoint }}"
+          description: "Only {{ $value | humanizePercentage }} disk space remaining"
+
+  - name: tounsivert_container_alerts
+    interval: 30s
+    rules:
+      # Container High Memory
+      - alert: ContainerHighMemory
+        expr: |
+          (container_memory_usage_bytes{name=~"tounsivert.*"} / container_spec_memory_limit_bytes{name=~"tounsivert.*"}) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: container
+        annotations:
+          summary: "Container {{ $labels.name }} using high memory"
+          description: "Memory usage is {{ $value | humanizePercentage }}"
+
+      # Container Restart
+      - alert: ContainerRestarted
+        expr: |
+          rate(container_last_seen{name=~"tounsivert.*"}[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+          component: container
+        annotations:
+          summary: "Container {{ $labels.name }} has restarted"
+          description: "Container restarted in the last 5 minutes"
+
+  - name: tounsivert_business_alerts
+    interval: 1m
+    rules:
+      # Donation Spike
+      - alert: DonationSpike
+        expr: |
+          rate(tounsivert_donations_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: info
+          component: business
+        annotations:
+          summary: "Unusual spike in donations"
+          description: "Donation rate is {{ $value }} donations/s (might indicate a campaign success or issue)"
+
+      # No Donations
+      - alert: NoDonations
+        expr: |
+          rate(tounsivert_donations_total[1h]) == 0
+        for: 1h
+        labels:
+          severity: info
+          component: business
+        annotations:
+          summary: "No donations in the last hour"
+          description: "This might be normal during off-hours or indicate a problem"
