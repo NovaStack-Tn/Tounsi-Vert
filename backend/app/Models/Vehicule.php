@@ -16,7 +16,7 @@ class Vehicule extends Model
         'location',
         'status',
         'requires_fuel_compensation',
-        'verified',
+        'verified', 'image_path',
     ];
 
     public function owner()

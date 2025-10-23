@@ -61,8 +61,11 @@
 
 <script>
 document.getElementById('bookingForm').addEventListener('submit', e => {
-    const requiredFields = e.target.querySelectorAll('input[required]');
+    const form = e.target;
+    const requiredFields = form.querySelectorAll('input[required]');
     let valid = true;
+
+    // Check required fields
     requiredFields.forEach(field => {
         if (!field.value.trim()) {
             field.classList.add('is-invalid');
@@ -71,7 +74,27 @@ document.getElementById('bookingForm').addEventListener('submit', e => {
             field.classList.remove('is-invalid');
         }
     });
+
+    // Validate scheduled_time
+    const scheduledInput = form.querySelector('input[name="scheduled_time"]');
+    const scheduledValue = scheduledInput.value;
+
+    if (scheduledValue) {
+        const scheduledTime = new Date(scheduledValue);
+        const availabilityStart = new Date("{{ $vehicule->availability_start }}");
+        const availabilityEnd = new Date("{{ $vehicule->availability_end }}");
+
+        if (scheduledTime < availabilityStart || scheduledTime > availabilityEnd) {
+            alert('Scheduled time must be within vehicle availability range.');
+            scheduledInput.classList.add('is-invalid');
+            valid = false;
+        } else {
+            scheduledInput.classList.remove('is-invalid');
+        }
+    }
+
     if (!valid) e.preventDefault();
 });
 </script>
+
 @endsection

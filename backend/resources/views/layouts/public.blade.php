@@ -126,11 +126,14 @@
                             <i class="bi bi-building me-1"></i>Organizations
                         </a>
                     </li>
-                     <li class="nav-item">
-                        <a class="nav-link px-3 {{ request()->routeIs('leaderboard') ? 'active fw-bold' : '' }}" href="{{ route('leaderboard') }}">
-                            <i class="bi bi-trophy-fill me-1"></i>VolunteerRides
-                        </a>
-                    </li>
+
+                    <li class="nav-item">
+    <a class="nav-link px-3 {{ request()->routeIs('vehicules.*') ? 'active fw-bold' : '' }}" href="{{ route('vehicules.index') }}">
+        <i class="bi bi-truck me-1"></i>VolunteerRides
+    </a>
+</li>
+
+                   
                     <li class="nav-item">
                         <a class="nav-link px-3 {{ request()->routeIs('leaderboard') ? 'active fw-bold' : '' }}" href="{{ route('leaderboard') }}">
                             <i class="bi bi-trophy-fill me-1"></i>Leaderboard

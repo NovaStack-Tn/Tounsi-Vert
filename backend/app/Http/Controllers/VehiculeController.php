@@ -4,38 +4,36 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Vehicule;
+use Illuminate\Support\Facades\Auth;
 
 class VehiculeController extends Controller
 {
-    //for admin viewing vehicules
+    // Show all vehicles and user's vehicles
     public function index(Request $request)
     {
-        // fetch all rows from DB
-    $vehicules = Vehicule::paginate(12); 
+        $vehicules = Vehicule::paginate(12);
+        $myVehicules = Vehicule::where('owner_id', Auth::id())->get();
 
-        // pass to Blade
-        return view('vehicules.index', ['vehicules' => $vehicules]);
+        return view('vehicules.index', [
+            'vehicules' => $vehicules,
+            'myVehicules' => $myVehicules
+        ]);
     }
 
-   public function indexuser($id)
-{
-    // fetch only vehicles of this owner
-    $vehicules = Vehicule::where('owner_id', $id)->get();
+    // Show vehicles of a specific user
+    public function indexuser($id)
+    {
+        $vehicules = Vehicule::where('owner_id', $id)->get();
+        return view('vehicules.indexuser', ['vehicules' => $vehicules]);
+    }
 
-    // pass to Blade
-    return view('vehicules.indexuser', ['vehicules' => $vehicules]);
-}
-
-
-    
-
-    // show create form
+    // Show create form
     public function create()
     {
         return view('vehicules.create');
     }
 
-    // store the new vehicule
+    // Store new vehicule
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -46,40 +44,51 @@ class VehiculeController extends Controller
             'availability_end' => 'required|date|after_or_equal:availability_start',
             'location' => 'required|string|max:255',
             'status' => 'required|string|max:50',
-            'owner_id' => 'nullable|integer',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
+
+        $data['owner_id'] = Auth::id();
+
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $request->file('image')->store('vehicules', 'public');
+        }
 
         Vehicule::create($data);
 
         return redirect('/vehicules/create')->with('success', 'Vehicule created!');
     }
 
+    // Update existing vehicule
     public function update(Request $request, $id)
-{
-    $vehicule = Vehicule::findOrFail($id);
-    $vehicule->update([
-        'type' => $request->type,
-        'capacity' => $request->capacity,
-        'availability_start' => $request->availability_start,
-        'availability_end' => $request->availability_end,
-        'description' => $request->description,
-        'location' => $request->location,
-        'status' => $request->status,
-    ]);
+    {
+        $vehicule = Vehicule::findOrFail($id);
 
-    return redirect()->back()->with('success', 'Vehicule updated successfully.');
-}
+        $data = $request->validate([
+            'type' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'capacity' => 'required|integer',
+            'availability_start' => 'required|date',
+            'availability_end' => 'required|date|after_or_equal:availability_start',
+            'location' => 'required|string|max:255',
+            'status' => 'required|string|max:50',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ]);
 
-// VehiculeController.php
-public function destroy($id)
-{
-    $vehicule = Vehicule::findOrFail($id);
-    $vehicule->delete();
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $request->file('image')->store('vehicules', 'public');
+        }
 
-    return redirect()->back()->with('success', 'Vehicule deleted successfully.');
-}
+        $vehicule->update($data);
 
+        return redirect()->back()->with('success', 'Vehicule updated successfully.');
+    }
 
+    // Delete vehicule
+    public function destroy($id)
+    {
+        $vehicule = Vehicule::findOrFail($id);
+        $vehicule->delete();
 
-
+        return redirect()->back()->with('success', 'Vehicule deleted successfully.');
+    }
 }
