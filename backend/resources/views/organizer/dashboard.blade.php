@@ -70,6 +70,28 @@
         </div>
     </div>
 
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="mb-3"><i class="bi bi-lightning-fill text-warning me-2"></i>Quick Actions</h6>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ route('organizer.events.create') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i>New Event
+                        </a>
+                        <a href="{{ route('organizer.community') }}" class="btn btn-info">
+                            <i class="bi bi-people me-1"></i>Community
+                        </a>
+                        <a href="{{ route('organizer.donations') }}" class="btn btn-success">
+                            <i class="bi bi-heart me-1"></i>Donations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Statistics Cards Row 1 -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
