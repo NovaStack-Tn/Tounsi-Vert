@@ -1,6 +1,6 @@
 @extends('layouts.public')
 
-@section('title', 'Make a Donation')
+@section('title', 'Edit Donation')
 
 @section('content')
 <div class="container py-5">
@@ -8,24 +8,23 @@
         <div class="col-md-8">
             <!-- Back Button -->
             <div class="mb-3">
-                <a href="{{ route('donations.index') }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Back to Donations
+                <a href="{{ route('donations.show', $donation) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Donation
                 </a>
             </div>
 
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0"><i class="bi bi-heart-fill"></i> Make a Donation</h4>
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="bi bi-pencil"></i> Edit Donation #{{ $donation->id }}</h4>
                 </div>
                 <div class="card-body">
-                    @if(isset($event))
-                        <div class="alert alert-info">
-                            <strong>Event:</strong> {{ $event->title }}
-                        </div>
-                    @endif
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> <strong>Note:</strong> Only pending donations can be edited.
+                    </div>
 
-                    <form method="POST" action="{{ route('donations.store') }}">
+                    <form method="POST" action="{{ route('donations.update', $donation) }}">
                         @csrf
+                        @method('PUT')
 
                         <!-- Organization Selection -->
                         <div class="mb-4">
@@ -37,7 +36,7 @@
                                 <option value="">-- Select Organization --</option>
                                 @foreach($organizations as $org)
                                     <option value="{{ $org->id }}" 
-                                            {{ (old('organization_id') ?? ($event->organization_id ?? '')) == $org->id ? 'selected' : '' }}>
+                                            {{ (old('organization_id') ?? $donation->organization_id) == $org->id ? 'selected' : '' }}>
                                         {{ $org->name }}
                                         @if($org->is_verified)
                                             ✓
@@ -59,7 +58,7 @@
                                 <option value="">-- General Donation --</option>
                                 @foreach($events as $evt)
                                     <option value="{{ $evt->id }}" 
-                                            {{ (old('event_id') ?? ($event->id ?? '')) == $evt->id ? 'selected' : '' }}>
+                                            {{ (old('event_id') ?? $donation->event_id) == $evt->id ? 'selected' : '' }}>
                                         {{ $evt->title }}
                                     </option>
                                 @endforeach
@@ -67,7 +66,6 @@
                             @error('event_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="form-text">Select an event if you want to donate to a specific event, or leave empty for general donation.</div>
                         </div>
 
                         <!-- Amount -->
@@ -77,7 +75,7 @@
                             </label>
                             <input type="number" class="form-control form-control-lg @error('amount') is-invalid @enderror" 
                                    id="amount" name="amount" min="1.01" max="1000000" step="0.01" 
-                                   value="{{ old('amount') }}" required>
+                                   value="{{ old('amount') ?? $donation->amount }}" required>
                             @error('amount')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -96,18 +94,20 @@
                             </div>
                         </div>
 
-                        <!-- Info Alert -->
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle"></i> <strong>Note:</strong> This is a demo. In production, this would integrate with a payment gateway.
+                        <!-- Status (Read-only display) -->
+                        <div class="mb-4">
+                            <label class="form-label">Current Status</label>
+                            <div>
+                                <span class="badge bg-warning">{{ ucfirst($donation->status) }}</span>
+                            </div>
                         </div>
 
                         <!-- Submit Buttons -->
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="bi bi-heart-fill"></i> Complete Donation
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-lg"></i> Update Donation
                             </button>
-                            <a href="{{ isset($event) ? route('events.show', $event) : route('donations.index') }}" 
-                               class="btn btn-outline-secondary">Cancel</a>
+                            <a href="{{ route('donations.show', $donation) }}" class="btn btn-outline-secondary">Cancel</a>
                         </div>
                     </form>
                 </div>

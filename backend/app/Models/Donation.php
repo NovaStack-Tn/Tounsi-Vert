@@ -38,4 +38,36 @@ class Donation extends Model
     {
         return $this->belongsTo(Event::class);
     }
+
+    // Helper method to get user directly through participation
+    public function user()
+    {
+        return $this->hasOneThrough(User::class, Participation::class, 'id', 'id', 'participation_id', 'user_id');
+    }
+
+    // Scope for filtering by user
+    public function scopeByUser($query, $userId)
+    {
+        return $query->whereHas('participation', function ($q) use ($userId) {
+            $q->where('user_id', $userId);
+        });
+    }
+
+    // Scope for filtering by organization
+    public function scopeByOrganization($query, $organizationId)
+    {
+        return $query->where('organization_id', $organizationId);
+    }
+
+    // Scope for filtering by status
+    public function scopeByStatus($query, $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    // Scope for date range filtering
+    public function scopeDateRange($query, $startDate, $endDate)
+    {
+        return $query->whereBetween('created_at', [$startDate, $endDate]);
+    }
 }

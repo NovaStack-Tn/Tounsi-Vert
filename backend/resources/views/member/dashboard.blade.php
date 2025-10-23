@@ -103,9 +103,9 @@
                     <i class="bi bi-heart-fill stat-icon text-danger"></i>
                     <h2 class="mt-3 mb-2">${{ number_format($totalDonationsAmount, 2) }}</h2>
                     <p class="text-muted mb-3">{{ $totalDonationsCount }} Donations Made</p>
-                    <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#donationHistoryModal">
-                        <i class="bi bi-clock-history me-1"></i>View History
-                    </button>
+                    <a href="{{ route('donations.index') }}" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-gear me-1"></i>Manage Donations
+                    </a>
                 </div>
             </div>
         </div>
