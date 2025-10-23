@@ -2,7 +2,7 @@
 # Note: This container runs PHP-FPM on port 9000. An Nginx reverse proxy is required
 # to serve static files and proxy PHP requests (handle via docker-compose or platform).
 
-FROM php:8.1-fpm-alpine
+FROM php:8.3-fpm-alpine
 
 # Set working directory
 WORKDIR /var/www/html
