@@ -91,7 +91,7 @@ class VehiculesTableSeeder extends Seeder
             ],
             [
                 'type' => 'Minibus',
-                'description' => 'Ideal for small groups',
+                'description' => 'Ideal for transporting volunteers or small groups to events and cleanup activities',
                 'capacity' => 15,
                 'availability_start' => '2025-11-02',
                 'availability_end' => '2025-12-31',

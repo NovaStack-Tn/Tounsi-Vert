@@ -41,6 +41,8 @@ Route::post('bookings/quick', [BookingController::class, 'quickMatch'])->name('b
 Route::resource('bookings', BookingController::class);
 Route::resource('vehicules', VehiculeController::class);
 Route::resource('bookings', BookingController::class);
+Route::get('/vehicules/{vehicule}/confirm', [VehiculeController::class, 'confirm'])->name('vehicules.confirm');
+
 
 
 // Events

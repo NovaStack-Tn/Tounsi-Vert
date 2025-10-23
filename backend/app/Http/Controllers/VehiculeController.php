@@ -91,4 +91,13 @@ class VehiculeController extends Controller
 
         return redirect()->back()->with('success', 'Vehicule deleted successfully.');
     }
+
+    public function confirm(Vehicule $vehicule)
+{
+    $vehicule->status = 'inactive';
+    $vehicule->save();
+
+    return redirect()->route('vehicules.index')->with('success', 'Vehicle confirmed and now inactive.');
+}
+
 }

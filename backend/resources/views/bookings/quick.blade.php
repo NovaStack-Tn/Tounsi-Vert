@@ -22,7 +22,7 @@
                         @csrf
                         <div class="mb-3">
                             <label class="form-label fw-bold">Describe your need</label>
-                            <input type="text" name="prompt" class="form-control" placeholder="E.g., Vehicle for elderly people this weekend" required>
+                            <input type="text" name="prompt" class="form-control" placeholder="E.g., Transport 10 volunteers to school cleanup" required>
                         </div>
 
                         <div class="d-grid gap-2">

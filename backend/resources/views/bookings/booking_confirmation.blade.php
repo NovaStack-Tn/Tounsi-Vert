@@ -19,10 +19,11 @@
         </ul>
 
         <p style="text-align: center; margin: 30px 0;">
-            <a href="http://127.0.0.1:8000/vehicules" 
-               style="background-color: #28a745; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-               Confirm
-            </a>
+          <a href="{{ route('vehicules.confirm', $vehicule->id) }}"
+   style="background-color: #28a745; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+   Confirm
+</a>
+
         </p>
 
         <p>Thank you for using <strong>Green Tounsi</strong>!</p>
