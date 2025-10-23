@@ -114,27 +114,53 @@
         <!-- Sidebar -->
         <aside class="organizer-sidebar">
             <a href="{{ route('organizer.dashboard') }}" class="sidebar-brand">
-                <i class="bi bi-building-fill-check me-2"></i>
-                <span>Organizer Panel</span>
+                <img src="{{ asset('logo.png') }}" alt="TounsiVert Logo" style="height: 80px; width: auto; margin-right: 50px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
             </a>
             
             <ul class="sidebar-menu">
+                @php
+                    $organization = auth()->user()->organizationsOwned()->first();
+                    $isBlocked = $organization && $organization->is_blocked;
+                @endphp
+                
+                @if($isBlocked)
+                    <li class="px-3 py-2">
+                        <div class="alert alert-danger mb-0 text-center p-2">
+                            <i class="bi bi-ban"></i>
+                            <small class="d-block"><strong>BLOCKED</strong></small>
+                            <small class="d-block">Contact Admin</small>
+                        </div>
+                    </li>
+                @endif
+                
                 <li>
-                    <a href="{{ route('organizer.dashboard') }}" class="{{ request()->routeIs('organizer.dashboard') ? 'active' : '' }}">
+                    <a href="{{ route('organizer.dashboard') }}" class="{{ request()->routeIs('organizer.dashboard') ? 'active' : '' }} {{ $isBlocked ? 'disabled' : '' }}" {!! $isBlocked ? 'onclick="return false;" style="opacity: 0.5; cursor: not-allowed;"' : '' !!}>
                         <i class="bi bi-speedometer2"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('organizer.organizations.index') }}" class="{{ request()->routeIs('organizer.organizations.*') ? 'active' : '' }}">
+                    <a href="{{ route('organizer.organizations.index') }}" class="{{ request()->routeIs('organizer.organizations.*') ? 'active' : '' }} {{ $isBlocked ? 'disabled' : '' }}" {!! $isBlocked ? 'onclick="return false;" style="opacity: 0.5; cursor: not-allowed;"' : '' !!}>
                         <i class="bi bi-building"></i>
-                        <span>My Organizations</span>
+                        <span>My Organization</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('organizer.events.index') }}" class="{{ request()->routeIs('organizer.events.*') ? 'active' : '' }}">
+                    <a href="{{ route('organizer.events.index') }}" class="{{ request()->routeIs('organizer.events.*') ? 'active' : '' }} {{ $isBlocked ? 'disabled' : '' }}" {!! $isBlocked ? 'onclick="return false;" style="opacity: 0.5; cursor: not-allowed;"' : '' !!}>
                         <i class="bi bi-calendar-event"></i>
                         <span>My Events</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('organizer.community') }}" class="{{ request()->routeIs('organizer.community') ? 'active' : '' }} {{ $isBlocked ? 'disabled' : '' }}" {!! $isBlocked ? 'onclick="return false;" style="opacity: 0.5; cursor: not-allowed;"' : '' !!}>
+                        <i class="bi bi-people-fill"></i>
+                        <span>Community</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('organizer.donations') }}" class="{{ request()->routeIs('organizer.donations') ? 'active' : '' }} {{ $isBlocked ? 'disabled' : '' }}" {!! $isBlocked ? 'onclick="return false;" style="opacity: 0.5; cursor: not-allowed;"' : '' !!}>
+                        <i class="bi bi-cash-stack"></i>
+                        <span>Donations</span>
                     </a>
                 </li>
             </ul>
@@ -143,27 +169,9 @@
 
             <ul class="sidebar-menu">
                 <li>
-                    <a href="{{ route('events.index') }}">
-                        <i class="bi bi-calendar-check"></i>
-                        <span>Browse Events</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('organizations.index') }}">
-                        <i class="bi bi-eye"></i>
-                        <span>Public View</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('dashboard') }}">
-                        <i class="bi bi-person-circle"></i>
-                        <span>Member Dashboard</span>
-                    </a>
-                </li>
-                <li>
                     <a href="{{ route('home') }}">
-                        <i class="bi bi-house-door"></i>
-                        <span>Back to Home</span>
+                        <i class="bi bi-arrow-left-circle"></i>
+                        <span>Return To TounsiVert</span>
                     </a>
                 </li>
                 <li>

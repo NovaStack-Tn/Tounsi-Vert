@@ -31,6 +31,17 @@
             font-size: 4rem;
             margin-bottom: 20px;
         }
+        .register-logo {
+            height: 100px;
+            width: auto;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
         .register-body {
             padding: 40px;
         }
@@ -65,9 +76,9 @@
             <div class="col-md-6">
                 <div class="register-card">
                     <div class="register-header">
-                        <i class="bi bi-tree-fill"></i>
-                        <h2 class="mb-0">Join TounsiVert</h2>
-                        <p class="mb-0">Start making an impact today!</p>
+                        <img src="{{ asset('logo.png') }}" alt="TounsiVert Logo" class="register-logo">
+                        <h2 class="mb-1 fw-bold" style="font-size: 2rem; letter-spacing: 1px;">Join TounsiVert</h2>
+                        <p class="mb-0" style="font-size: 1.1rem;">Start making an impact today!</p>
                     </div>
                     <div class="register-body">
                         <form method="POST" action="{{ route('register') }}">

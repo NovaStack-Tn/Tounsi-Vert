@@ -4,6 +4,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\LeaderboardController;
+use App\Http\Controllers\VehiculeController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\Member\ParticipationController;
 use App\Http\Controllers\Member\DonationController;
 use App\Http\Controllers\Member\ReviewController;
@@ -15,6 +18,8 @@ use App\Http\Controllers\Organizer\OrganizerDashboardController;
 use App\Http\Controllers\OrganizationRequestController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminOrganizationController;
+use App\Http\Controllers\Admin\AdminVehiculeController;
+use App\Http\Controllers\Admin\AdminEventController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminOrganizationRequestController;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +32,18 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
+Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
+
+//VolunteerRides and booking
+Route::post('/bookings/quick', [BookingController::class, 'quickMatch'])->name('bookings.quickMatch');
+Route::get('bookings/quick', [BookingController::class, 'quickForm'])->name('bookings.quickForm');
+Route::post('bookings/quick', [BookingController::class, 'quickMatch'])->name('bookings.quickMatch');
+Route::resource('bookings', BookingController::class);
+Route::resource('vehicules', VehiculeController::class);
+Route::resource('bookings', BookingController::class);
+Route::get('/vehicules/{vehicule}/confirm', [VehiculeController::class, 'confirm'])->name('vehicules.confirm');
+
+
 
 // Events
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
@@ -53,6 +70,7 @@ Route::middleware('auth')->group(function () {
     
     // Participations
     Route::post('/events/{event}/attend', [ParticipationController::class, 'attend'])->name('events.attend');
+    Route::post('/events/{event}/unjoin', [ParticipationController::class, 'unjoin'])->name('events.unjoin');
     Route::post('/events/{event}/follow', [ParticipationController::class, 'follow'])->name('events.follow');
     Route::post('/events/{event}/share', [ParticipationController::class, 'share'])->name('events.share');
     
@@ -80,8 +98,11 @@ Route::middleware('auth')->group(function () {
     
     // Reviews
     Route::post('/events/{event}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
     
     // Reports
+    Route::get('/reports', [ReportController::class, 'index'])->name('member.reports.index');
+    Route::get('/reports/create', [ReportController::class, 'create'])->name('member.reports.create');
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
     
     // Organization Requests
@@ -100,11 +121,19 @@ Route::middleware(['auth'])->prefix('organizer')->name('organizer.')->group(func
     // Dashboard
     Route::get('/dashboard', [OrganizerDashboardController::class, 'index'])->name('dashboard');
     
-    // Organizations
-    Route::resource('organizations', OrganizerOrganizationController::class);
+    // Organizations (single organization per user)
+    Route::get('/organizations', [OrganizerOrganizationController::class, 'index'])->name('organizations.index');
+    Route::get('/organizations/create', [OrganizerOrganizationController::class, 'create'])->name('organizations.create');
+    Route::post('/organizations', [OrganizerOrganizationController::class, 'store'])->name('organizations.store');
+    Route::get('/organizations/edit', [OrganizerOrganizationController::class, 'edit'])->name('organizations.edit');
+    Route::put('/organizations', [OrganizerOrganizationController::class, 'update'])->name('organizations.update');
     
     // Events
     Route::resource('events', OrganizerEventController::class);
+    
+    // Community & Donations
+    Route::get('/community', [OrganizerDashboardController::class, 'community'])->name('community');
+    Route::get('/donations', [OrganizerDashboardController::class, 'donations'])->name('donations');
 });
 
 /*
@@ -122,8 +151,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/organizations/{organization}/unverify', [AdminOrganizationController::class, 'unverify'])->name('organizations.unverify');
     Route::delete('/organizations/{organization}', [AdminOrganizationController::class, 'destroy'])->name('organizations.destroy');
     
+    // Events
+    Route::get('/events', [AdminEventController::class, 'index'])->name('events.index');
+    Route::get('/events/leaderboard', [AdminEventController::class, 'leaderboard'])->name('events.leaderboard');
+    Route::get('/events/{event}', [AdminEventController::class, 'show'])->name('events.show');
+    Route::delete('/events/{event}', [AdminEventController::class, 'destroy'])->name('events.destroy');
+    
     // Reports
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+    Route::post('/reports/{report}/resolve', [AdminReportController::class, 'resolve'])->name('reports.resolve');
+    Route::post('/reports/{report}/dismiss', [AdminReportController::class, 'dismiss'])->name('reports.dismiss');
+    Route::post('/reports/{report}/suspend-organization', [AdminReportController::class, 'suspendOrganization'])->name('reports.suspendOrganization');
     Route::patch('/reports/{report}/status', [AdminReportController::class, 'updateStatus'])->name('reports.updateStatus');
     
     // Organization Requests
@@ -131,6 +169,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/organization-requests/{organizationRequest}', [AdminOrganizationRequestController::class, 'show'])->name('organization-requests.show');
     Route::post('/organization-requests/{organizationRequest}/approve', [AdminOrganizationRequestController::class, 'approve'])->name('organization-requests.approve');
     Route::post('/organization-requests/{organizationRequest}/reject', [AdminOrganizationRequestController::class, 'reject'])->name('organization-requests.reject');
+     // Vehicules
+    Route::get('/vehicules', [AdminVehiculeController::class, 'index'])->name('vehicules.index');
+    Route::post('/vehicules/{vehicule}/verify', [AdminVehiculeController::class, 'verify'])->name('vehicules.verify');
+    Route::post('/vehicules/{vehicule}/unverify', [AdminVehiculeController::class, 'unverify'])->name('vehicules.unverify');
+    Route::delete('/vehicules/{vehicule}', [AdminVehiculeController::class, 'destroy'])->name('vehicules.destroy');
+
+
+    
+
 });
 
 require __DIR__.'/auth.php';

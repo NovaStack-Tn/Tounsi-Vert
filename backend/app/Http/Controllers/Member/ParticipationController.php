@@ -58,6 +58,31 @@ class ParticipationController extends Controller
         }
     }
 
+    public function unjoin(Event $event)
+    {
+        $participation = Participation::where('user_id', auth()->id())
+            ->where('event_id', $event->id)
+            ->where('type', 'attend')
+            ->first();
+
+        if (!$participation) {
+            return back()->with('error', 'You have not joined this event.');
+        }
+
+        try {
+            DB::transaction(function () use ($participation) {
+                $participation->delete();
+                
+                // Decrease user score
+                auth()->user()->decrement('score', 10);
+            });
+
+            return back()->with('success', 'You have successfully left this event.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Unable to leave this event.');
+        }
+    }
+
     public function share(Event $event, Request $request)
     {
         $request->validate([

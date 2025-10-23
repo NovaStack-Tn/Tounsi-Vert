@@ -104,7 +104,7 @@
         <!-- Sidebar -->
         <aside class="admin-sidebar">
             <a href="{{ route('admin.dashboard') }}" class="sidebar-brand">
-                <i class="bi bi-shield-fill-check me-2"></i>
+                <img src="{{ asset('logo.png') }}" alt="TounsiVert Logo" style="height: 35px; width: auto; margin-right: 10px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
                 <span>Admin Panel</span>
             </a>
             
@@ -127,22 +127,26 @@
                         <span>Organizations</span>
                     </a>
                 </li>
+
                 <li>
-                    <a href="{{ route('admin.reports.index') }}" class="{{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
-                        <i class="bi bi-flag"></i>
-                        <span>Reports</span>
-                    </a>
-                </li>
+    <a href="{{ route('admin.vehicules.index') }}" class="{{ request()->routeIs('admin.vehicules.*') ? 'active' : '' }}">
+        <i class="bi bi-truck"></i>
+        <span>Vehicules</span>
+    </a>
+</li>
+
+
+
                 <li>
-                    <a href="{{ route('events.index') }}">
+                    <a href="{{ route('admin.events.index') }}" class="{{ request()->routeIs('admin.events.*') ? 'active' : '' }}">
                         <i class="bi bi-calendar-event"></i>
                         <span>All Events</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('organizations.index') }}">
-                        <i class="bi bi-eye"></i>
-                        <span>Public View</span>
+                    <a href="{{ route('admin.reports.index') }}" class="{{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                        <i class="bi bi-flag"></i>
+                        <span>Reports</span>
                     </a>
                 </li>
             </ul>
@@ -150,12 +154,6 @@
             <hr style="border-color: rgba(255,255,255,0.1); margin: 20px;">
 
             <ul class="sidebar-menu">
-                <li>
-                    <a href="{{ route('dashboard') }}">
-                        <i class="bi bi-person-circle"></i>
-                        <span>My Profile</span>
-                    </a>
-                </li>
                 <li>
                     <a href="{{ route('home') }}">
                         <i class="bi bi-house-door"></i>
