@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\GeminiAIService;
 use App\Services\TounsiVertAIService;
 use App\Models\Organization;
 use App\Models\Event;
@@ -15,7 +16,9 @@ class AIController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'admin']);
-        $this->aiService = new TounsiVertAIService();
+        
+        // Use Gemini AI only
+        $this->aiService = new GeminiAIService();
     }
 
     /**
