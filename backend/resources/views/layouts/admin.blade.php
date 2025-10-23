@@ -127,6 +127,16 @@
                         <span>Organizations</span>
                     </a>
                 </li>
+
+                <li>
+    <a href="{{ route('admin.vehicules.index') }}" class="{{ request()->routeIs('admin.vehicules.*') ? 'active' : '' }}">
+        <i class="bi bi-truck"></i>
+        <span>Vehicules</span>
+    </a>
+</li>
+
+
+
                 <li>
                     <a href="{{ route('admin.events.index') }}" class="{{ request()->routeIs('admin.events.*') ? 'active' : '' }}">
                         <i class="bi bi-calendar-event"></i>
