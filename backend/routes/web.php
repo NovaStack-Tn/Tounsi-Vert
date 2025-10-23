@@ -7,27 +7,29 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\VehiculeController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\Member\DashboardController as MemberDashboardController;
 use App\Http\Controllers\Member\ParticipationController;
 use App\Http\Controllers\Member\DonationController;
 use App\Http\Controllers\Member\ReviewController;
 use App\Http\Controllers\Member\ReportController;
-use App\Http\Controllers\Member\DashboardController as MemberDashboardController;
+use App\Http\Controllers\Member\AIRecommendationController;
 use App\Http\Controllers\Organizer\OrganizerEventController;
 use App\Http\Controllers\Organizer\OrganizerOrganizationController;
 use App\Http\Controllers\Organizer\OrganizerDashboardController;
 use App\Http\Controllers\OrganizationRequestController;
 use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\Admin\AdminOrganizationController;
-use App\Http\Controllers\Admin\AdminVehiculeController;
 use App\Http\Controllers\Admin\AdminEventController;
-use App\Http\Controllers\Admin\AdminReportController;
+use App\Http\Controllers\Admin\AdminOrganizationController;
 use App\Http\Controllers\Admin\AdminOrganizationRequestController;
+use App\Http\Controllers\Admin\AdminReportController;
+use App\Http\Controllers\Admin\AdminVehiculeController;
+use App\Http\Controllers\Admin\AIController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
 | Public Routes
-|--------------------------------------------------------------------------
+{{ ... }}
 */
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -91,6 +93,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/create', [ReportController::class, 'create'])->name('member.reports.create');
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
     
+    // AI Recommendations
+    Route::get('/ai/recommendations', [AIRecommendationController::class, 'index'])->name('member.ai.recommendations');
+    Route::get('/api/ai/recommendations', [AIRecommendationController::class, 'getRecommendations'])->name('member.ai.api');
+    
     // Organization Requests
     Route::get('/organization-request', [OrganizationRequestController::class, 'create'])->name('organization-request.create');
     Route::post('/organization-request', [OrganizationRequestController::class, 'store'])->name('organization-request.store');
@@ -145,10 +151,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Reports
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
-    Route::post('/reports/{report}/resolve', [AdminReportController::class, 'resolve'])->name('reports.resolve');
-    Route::post('/reports/{report}/dismiss', [AdminReportController::class, 'dismiss'])->name('reports.dismiss');
+    Route::get('/reports/analytics', [AdminReportController::class, 'analytics'])->name('reports.analytics');
+    Route::get('/reports/search', [AdminReportController::class, 'search'])->name('reports.search');
+    Route::get('/reports/{report}', [AdminReportController::class, 'show'])->name('reports.show');
+    Route::post('/reports/{report}/add-action', [AdminReportController::class, 'addAction'])->name('reports.addAction');
+    Route::post('/reports/{report}/update-status', [AdminReportController::class, 'updateStatus'])->name('reports.updateStatus');
     Route::post('/reports/{report}/suspend-organization', [AdminReportController::class, 'suspendOrganization'])->name('reports.suspendOrganization');
-    Route::patch('/reports/{report}/status', [AdminReportController::class, 'updateStatus'])->name('reports.updateStatus');
+    Route::post('/reports/bulk-action', [AdminReportController::class, 'bulkAction'])->name('reports.bulkAction');
     
     // Organization Requests
     Route::get('/organization-requests', [AdminOrganizationRequestController::class, 'index'])->name('organization-requests.index');
@@ -161,8 +170,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/vehicules/{vehicule}/unverify', [AdminVehiculeController::class, 'unverify'])->name('vehicules.unverify');
     Route::delete('/vehicules/{vehicule}', [AdminVehiculeController::class, 'destroy'])->name('vehicules.destroy');
 
-
-    
+    // AI - Intelligence Artificielle
+    Route::get('/ai/dashboard', [AIController::class, 'dashboard'])->name('ai.dashboard');
+    Route::get('/ai/anomalies', [AIController::class, 'organizationsWithAnomalies'])->name('ai.anomalies');
+    Route::get('/ai/organization/{organization}', [AIController::class, 'analyzeOrganization'])->name('ai.organization');
+    Route::get('/ai/event/{event}/predict', [AIController::class, 'predictEvent'])->name('ai.predict-event');
 
 });
 

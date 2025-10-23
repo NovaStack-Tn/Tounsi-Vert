@@ -254,7 +254,7 @@
             </div>
 
             <!-- Quick Stats -->
-            <div class="card shadow-sm border-0">
+            <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Quick Stats</h5>
                 </div>
@@ -277,6 +277,111 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Reports Section -->
+            @if($reportsCount['total'] > 0)
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-flag-fill me-2"></i>Community Reports</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Reports Summary -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <small class="text-muted">Total Reports</small>
+                            <span class="badge bg-secondary">{{ $reportsCount['total'] }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <small class="text-muted">Open</small>
+                            <span class="badge bg-danger">{{ $reportsCount['open'] }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <small class="text-muted">In Review</small>
+                            <span class="badge bg-warning">{{ $reportsCount['in_review'] }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">Resolved</small>
+                            <span class="badge bg-success">{{ $reportsCount['resolved'] }}</span>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Recent Reports with Actions -->
+                    <h6 class="mb-3"><i class="bi bi-clock-history me-2"></i>Recent Reports</h6>
+                    @forelse($reports as $report)
+                        <div class="border rounded p-3 mb-3 bg-light">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <span class="badge bg-{{ $report->statusBadge }} mb-1">{{ ucfirst($report->status) }}</span>
+                                    @if($report->category)
+                                        <span class="badge bg-info mb-1">{{ $report->categoryLabel }}</span>
+                                    @endif
+                                    @if($report->priority)
+                                        <span class="badge bg-{{ $report->priorityBadge }} mb-1">{{ ucfirst($report->priority) }}</span>
+                                    @endif
+                                </div>
+                                <small class="text-muted">{{ $report->created_at->diffForHumans() }}</small>
+                            </div>
+                            
+                            <p class="mb-2 small"><strong>Reason:</strong> {{ $report->reason }}</p>
+                            
+                            @if($report->details)
+                                <p class="mb-2 small text-muted">{{ Str::limit($report->details, 100) }}</p>
+                            @endif
+
+                            <!-- Report Actions (JOIN data) -->
+                            @if($report->actions->count() > 0)
+                                <div class="mt-2 pt-2 border-top">
+                                    <small class="text-muted d-block mb-2">
+                                        <i class="bi bi-shield-check me-1"></i>
+                                        <strong>Actions Taken ({{ $report->actions->count() }}):</strong>
+                                    </small>
+                                    @foreach($report->actions->take(2) as $action)
+                                        <div class="ms-3 mb-2">
+                                            <span class="badge bg-{{ $action->actionTypeBadge }} badge-sm">
+                                                {{ $action->actionTypeLabel }}
+                                            </span>
+                                            <small class="text-muted d-block">
+                                                by {{ $action->admin->full_name }} - {{ $action->action_taken_at->diffForHumans() }}
+                                            </small>
+                                            @if($action->action_note)
+                                                <small class="text-muted fst-italic d-block">
+                                                    "{{ Str::limit($action->action_note, 80) }}"
+                                                </small>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                    @if($report->actions->count() > 2)
+                                        <small class="text-muted ms-3">
+                                            <i class="bi bi-three-dots"></i> +{{ $report->actions->count() - 2 }} more actions
+                                        </small>
+                                    @endif
+                                </div>
+                            @else
+                                <small class="text-muted">
+                                    <i class="bi bi-hourglass-split me-1"></i>Awaiting admin review
+                                </small>
+                            @endif
+
+                            <div class="mt-2 pt-2 border-top">
+                                <small class="text-muted">
+                                    <i class="bi bi-person me-1"></i>Reported by: {{ $report->user->full_name }}
+                                </small>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-muted small mb-0">No recent reports</p>
+                    @endforelse
+
+                    @if($reports->count() >= 5)
+                        <div class="text-center mt-3">
+                            <small class="text-muted">Showing 5 most recent reports</small>
+                        </div>
+                    @endif
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>

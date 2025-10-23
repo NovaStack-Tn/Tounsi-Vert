@@ -16,11 +16,18 @@ return new class extends Migration
             $table->string('reason', 200)->nullable();
             $table->text('details')->nullable();
             $table->enum('status', ['open', 'in_review', 'resolved', 'dismissed'])->default('open');
+            $table->enum('priority', ['low', 'medium', 'high', 'critical'])->default('medium');
+            $table->enum('category', ['spam', 'inappropriate', 'fraud', 'harassment', 'violence', 'misinformation', 'copyright', 'other'])->default('other');
+            $table->foreignId('resolved_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->timestamp('resolved_at')->nullable();
             $table->timestamps();
             
             $table->index(['status']);
+            $table->index(['priority']);
+            $table->index(['category']);
             $table->index(['organization_id']);
             $table->index(['event_id']);
+            $table->index(['user_id']);
         });
     }
 
