@@ -335,13 +335,13 @@
                                     <p class="text-center text-muted small mb-2">
                                         Your support makes a real difference!
                                     </p>
-                                    <a href="{{ route('donations.create', $event) }}" class="btn btn-warning w-100 action-btn">
+                                    <a href="{{ route('donations.create', ['event_id' => $event->id]) }}" class="btn btn-warning w-100 action-btn">
                                         <i class="bi bi-heart-fill me-2"></i>Donate More
                                     </a>
                                 </div>
                             </div>
                         @else
-                            <a href="{{ route('donations.create', $event) }}" class="btn btn-warning w-100 mb-2 action-btn">
+                            <a href="{{ route('donations.create', ['event_id' => $event->id]) }}" class="btn btn-warning w-100 mb-2 action-btn">
                                 <i class="bi bi-heart-fill me-2"></i>Donate
                             </a>
                         @endif

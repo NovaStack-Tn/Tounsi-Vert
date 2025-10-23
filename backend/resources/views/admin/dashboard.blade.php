@@ -116,6 +116,72 @@
         </div>
     </div>
 
+    <!-- Category Management Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h5 class="mb-0">
+                        <i class="bi bi-tags-fill me-2"></i>Category Management
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Organization Categories -->
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-primary h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-primary text-white rounded-circle p-3 me-3">
+                                            <i class="bi bi-building" style="font-size: 1.5rem;"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-0">Organization Categories</h5>
+                                            <small class="text-muted">Manage categories for organizations</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ route('admin.org-categories.index') }}" class="btn btn-primary">
+                                            <i class="bi bi-list-ul me-2"></i>View All Categories
+                                        </a>
+                                        <a href="{{ route('admin.org-categories.create') }}" class="btn btn-outline-primary">
+                                            <i class="bi bi-plus-circle me-2"></i>Add New Category
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Event Categories -->
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-success h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-success text-white rounded-circle p-3 me-3">
+                                            <i class="bi bi-calendar-event" style="font-size: 1.5rem;"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-0">Event Categories</h5>
+                                            <small class="text-muted">Manage categories for events</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ route('admin.event-categories.index') }}" class="btn btn-success">
+                                            <i class="bi bi-list-ul me-2"></i>View All Categories
+                                        </a>
+                                        <a href="{{ route('admin.event-categories.create') }}" class="btn btn-outline-success">
+                                            <i class="bi bi-plus-circle me-2"></i>Add New Category
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <!-- Pending Organizations -->
         <div class="col-md-6 mb-4">

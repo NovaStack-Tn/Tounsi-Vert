@@ -6,6 +6,9 @@
 
 @section('content')
 <div>
+    <!-- Advanced Filters Component -->
+    @include('admin.organizations._filters')
+
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">All Organizations ({{ $organizations->total() }})</h5>
@@ -19,6 +22,9 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
+                            <th style="width: 40px;">
+                                <input type="checkbox" class="form-check-input" onchange="toggleAllOrganizations(this)">
+                            </th>
                             <th>ID</th>
                             <th>Logo</th>
                             <th>Name</th>
@@ -33,6 +39,12 @@
                     <tbody>
                         @forelse($organizations as $org)
                             <tr>
+                                <td class="align-middle">
+                                    <input type="checkbox" 
+                                           class="form-check-input org-checkbox" 
+                                           data-org-id="{{ $org->id }}"
+                                           onchange="toggleOrganization(this, {{ $org->id }})">
+                                </td>
                                 <td class="align-middle">{{ $org->id }}</td>
                                 <td class="align-middle">
                                     @if($org->logo_path)
@@ -69,9 +81,13 @@
                                 </td>
                                 <td class="align-middle">
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('organizations.show', $org) }}" class="btn btn-sm btn-info" target="_blank" title="View">
+                                        <a href="{{ route('organizations.show', $org) }}" class="btn btn-sm btn-info" target="_blank" title="View Public Page">
                                             <i class="bi bi-eye"></i>
                                         </a>
+                                        
+                                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#insightsModal{{ $org->id }}" title="View Insights">
+                                            <i class="bi bi-graph-up"></i>
+                                        </button>
                                         
                                         @if(!$org->is_verified)
                                             <form method="POST" action="{{ route('admin.organizations.verify', $org) }}" class="d-inline">
@@ -115,4 +131,10 @@
             {{ $organizations->links() }}
         </div>
     </div>
+
+    <!-- Organization Insights Modals -->
+    @foreach($organizations as $org)
+        @include('admin.organizations._insights_modal_html', ['organization' => $org])
+    @endforeach
+</div>
 @endsection

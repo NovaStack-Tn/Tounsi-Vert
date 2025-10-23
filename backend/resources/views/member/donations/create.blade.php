@@ -8,9 +8,15 @@
         <div class="col-md-8">
             <!-- Back Button -->
             <div class="mb-3">
-                <a href="{{ route('donations.index') }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Back to Donations
-                </a>
+                @if(isset($event))
+                    <a href="{{ route('events.show', $event) }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Event
+                    </a>
+                @else
+                    <a href="{{ route('donations.index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Donations
+                    </a>
+                @endif
             </div>
 
             <div class="card shadow-sm">
@@ -19,56 +25,69 @@
                 </div>
                 <div class="card-body">
                     @if(isset($event))
-                        <div class="alert alert-info">
-                            <strong>Event:</strong> {{ $event->title }}
+                        <div class="alert alert-success border-success">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-calendar-event me-3" style="font-size: 2rem;"></i>
+                                <div>
+                                    <h5 class="mb-1">Donating to Event</h5>
+                                    <p class="mb-1"><strong>{{ $event->title }}</strong></p>
+                                    <small class="text-muted">
+                                        <i class="bi bi-building me-1"></i>{{ $event->organization->name }}
+                                    </small>
+                                </div>
+                            </div>
                         </div>
                     @endif
 
                     <form method="POST" action="{{ route('donations.store') }}">
                         @csrf
 
-                        <!-- Organization Selection -->
-                        <div class="mb-4">
-                            <label for="organization_id" class="form-label">
-                                Organization <span class="text-danger">*</span>
-                            </label>
-                            <select name="organization_id" id="organization_id" 
-                                    class="form-select @error('organization_id') is-invalid @enderror" required>
-                                <option value="">-- Select Organization --</option>
-                                @foreach($organizations as $org)
-                                    <option value="{{ $org->id }}" 
-                                            {{ (old('organization_id') ?? ($event->organization_id ?? '')) == $org->id ? 'selected' : '' }}>
-                                        {{ $org->name }}
-                                        @if($org->is_verified)
-                                            ✓
-                                        @endif
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('organization_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                        @if(isset($event))
+                            <!-- Hidden fields - automatically set from event -->
+                            <input type="hidden" name="organization_id" value="{{ $event->organization_id }}">
+                            <input type="hidden" name="event_id" value="{{ $event->id }}">
+                        @else
+                            <!-- Organization Selection - shown only for general donations -->
+                            <div class="mb-4">
+                                <label for="organization_id" class="form-label">
+                                    Organization <span class="text-danger">*</span>
+                                </label>
+                                <select name="organization_id" id="organization_id" 
+                                        class="form-select @error('organization_id') is-invalid @enderror" required>
+                                    <option value="">-- Select Organization --</option>
+                                    @foreach($organizations as $org)
+                                        <option value="{{ $org->id }}" {{ old('organization_id') == $org->id ? 'selected' : '' }}>
+                                            {{ $org->name }}
+                                            @if($org->is_verified)
+                                                ✓
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('organization_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                        <!-- Event Selection (Optional) -->
-                        <div class="mb-4">
-                            <label for="event_id" class="form-label">
-                                Event <small class="text-muted">(Optional)</small>
-                            </label>
-                            <select name="event_id" id="event_id" class="form-select @error('event_id') is-invalid @enderror">
-                                <option value="">-- General Donation --</option>
-                                @foreach($events as $evt)
-                                    <option value="{{ $evt->id }}" 
-                                            {{ (old('event_id') ?? ($event->id ?? '')) == $evt->id ? 'selected' : '' }}>
-                                        {{ $evt->title }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('event_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">Select an event if you want to donate to a specific event, or leave empty for general donation.</div>
-                        </div>
+                            <!-- Event Selection (Optional) - shown only for general donations -->
+                            <div class="mb-4">
+                                <label for="event_id" class="form-label">
+                                    Event <small class="text-muted">(Optional)</small>
+                                </label>
+                                <select name="event_id" id="event_id" class="form-select @error('event_id') is-invalid @enderror">
+                                    <option value="">-- General Donation --</option>
+                                    @foreach($events as $evt)
+                                        <option value="{{ $evt->id }}" {{ old('event_id') == $evt->id ? 'selected' : '' }}>
+                                            {{ $evt->title }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('event_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="form-text">Select an event if you want to donate to a specific event, or leave empty for general donation.</div>
+                            </div>
+                        @endif
 
                         <!-- Amount -->
                         <div class="mb-4">

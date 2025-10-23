@@ -87,4 +87,120 @@ class Event extends Model
         }
         return $this->attendees()->count() >= $this->max_participants;
     }
+
+    // ============================================
+    // Query Scopes for Advanced Filtering
+    // ============================================
+
+    /**
+     * Apply multiple filters to events query
+     */
+    public function scopeFilter($query, $filters)
+    {
+        return $query
+            ->when($filters['search'] ?? null, function ($query, $search) {
+                $query->where('title', 'like', '%'.$search.'%')
+                      ->orWhere('description', 'like', '%'.$search.'%');
+            })
+            ->when($filters['category_id'] ?? null, fn($q, $v) => $q->where('event_category_id', $v))
+            ->when($filters['type'] ?? null, fn($q, $v) => $q->where('type', $v))
+            ->when($filters['region'] ?? null, fn($q, $v) => $q->where('region', $v))
+            ->when($filters['city'] ?? null, fn($q, $v) => $q->where('city', $v))
+            ->when($filters['start_date'] ?? null, fn($q, $v) => $q->where('start_at', '>=', $v))
+            ->when($filters['end_date'] ?? null, fn($q, $v) => $q->where('end_at', '<=', $v))
+            ->when($filters['status'] ?? null, function ($query, $status) {
+                if ($status === 'upcoming') {
+                    $query->where('start_at', '>', now());
+                } elseif ($status === 'ongoing') {
+                    $query->where('start_at', '<=', now())
+                          ->where('end_at', '>=', now());
+                } elseif ($status === 'past') {
+                    $query->where('end_at', '<', now());
+                }
+            })
+            ->when($filters['published'] ?? null, fn($q, $v) => $q->where('is_published', $v === '1'));
+    }
+
+    /**
+     * Search events by title or description
+     */
+    public function scopeSearch($query, $term)
+    {
+        return $query->where(function($q) use ($term) {
+            $q->where('title', 'like', '%'.$term.'%')
+              ->orWhere('description', 'like', '%'.$term.'%');
+        });
+    }
+
+    /**
+     * Sort events by specified field
+     */
+    public function scopeSort($query, $field, $direction = 'asc')
+    {
+        $allowedFields = ['title', 'start_at', 'end_at', 'created_at'];
+        
+        if (in_array($field, $allowedFields)) {
+            return $query->orderBy($field, $direction);
+        }
+        
+        return $query->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Get upcoming events
+     */
+    public function scopeUpcoming($query)
+    {
+        return $query->where('start_at', '>', now())->orderBy('start_at', 'asc');
+    }
+
+    /**
+     * Get past events
+     */
+    public function scopePast($query)
+    {
+        return $query->where('end_at', '<', now())->orderBy('start_at', 'desc');
+    }
+
+    /**
+     * Get ongoing events
+     */
+    public function scopeOngoing($query)
+    {
+        return $query->where('start_at', '<=', now())
+                    ->where('end_at', '>=', now());
+    }
+
+    /**
+     * Get published events only
+     */
+    public function scopePublished($query)
+    {
+        return $query->where('is_published', true);
+    }
+
+    /**
+     * Filter by category
+     */
+    public function scopeByCategory($query, $categoryId)
+    {
+        return $query->where('event_category_id', $categoryId);
+    }
+
+    /**
+     * Filter by region
+     */
+    public function scopeByRegion($query, $region)
+    {
+        return $query->where('region', $region);
+    }
+
+    /**
+     * Get events with available capacity
+     */
+    public function scopeWithAvailableSpots($query)
+    {
+        return $query->whereNotNull('max_participants')
+                    ->whereRaw('max_participants > (SELECT COUNT(*) FROM participations WHERE participations.event_id = events.id AND participations.type = "attend")');
+    }
 }

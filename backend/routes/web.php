@@ -22,6 +22,8 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminEventController;
 use App\Http\Controllers\Admin\AdminOrganizationController;
 use App\Http\Controllers\Admin\AdminOrganizationRequestController;
+use App\Http\Controllers\Admin\AdminOrgCategoryController;
+use App\Http\Controllers\Admin\AdminEventCategoryController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminVehiculeController;
 use App\Http\Controllers\Admin\AIController;
@@ -157,14 +159,21 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Organizations
     Route::get('/organizations', [AdminOrganizationController::class, 'index'])->name('organizations.index');
+    Route::get('/organizations/export', [AdminOrganizationController::class, 'export'])->name('organizations.export');
+    Route::get('/organizations/{organization}/insights', [AdminOrganizationController::class, 'insights'])->name('organizations.insights');
     Route::post('/organizations/{organization}/verify', [AdminOrganizationController::class, 'verify'])->name('organizations.verify');
     Route::post('/organizations/{organization}/unverify', [AdminOrganizationController::class, 'unverify'])->name('organizations.unverify');
+    Route::post('/organizations/bulk-verify', [AdminOrganizationController::class, 'bulkVerify'])->name('organizations.bulk-verify');
+    Route::post('/organizations/bulk-unverify', [AdminOrganizationController::class, 'bulkUnverify'])->name('organizations.bulk-unverify');
+    Route::post('/organizations/bulk-reject', [AdminOrganizationController::class, 'bulkReject'])->name('organizations.bulk-reject');
     Route::delete('/organizations/{organization}', [AdminOrganizationController::class, 'destroy'])->name('organizations.destroy');
     
     // Events
     Route::get('/events', [AdminEventController::class, 'index'])->name('events.index');
+    Route::get('/events/export', [AdminEventController::class, 'export'])->name('events.export');
     Route::get('/events/leaderboard', [AdminEventController::class, 'leaderboard'])->name('events.leaderboard');
     Route::get('/events/{event}', [AdminEventController::class, 'show'])->name('events.show');
+    Route::get('/events/{event}/ics', [AdminEventController::class, 'exportIcs'])->name('events.ics');
     Route::delete('/events/{event}', [AdminEventController::class, 'destroy'])->name('events.destroy');
     
     // Reports
@@ -188,6 +197,21 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/vehicules/{vehicule}/unverify', [AdminVehiculeController::class, 'unverify'])->name('vehicules.unverify');
     Route::delete('/vehicules/{vehicule}', [AdminVehiculeController::class, 'destroy'])->name('vehicules.destroy');
 
+    // Organization Categories
+    Route::get('/org-categories', [AdminOrgCategoryController::class, 'index'])->name('org-categories.index');
+    Route::get('/org-categories/create', [AdminOrgCategoryController::class, 'create'])->name('org-categories.create');
+    Route::post('/org-categories', [AdminOrgCategoryController::class, 'store'])->name('org-categories.store');
+    Route::get('/org-categories/{orgCategory}/edit', [AdminOrgCategoryController::class, 'edit'])->name('org-categories.edit');
+    Route::put('/org-categories/{orgCategory}', [AdminOrgCategoryController::class, 'update'])->name('org-categories.update');
+    Route::delete('/org-categories/{orgCategory}', [AdminOrgCategoryController::class, 'destroy'])->name('org-categories.destroy');
+
+    // Event Categories
+    Route::get('/event-categories', [AdminEventCategoryController::class, 'index'])->name('event-categories.index');
+    Route::get('/event-categories/create', [AdminEventCategoryController::class, 'create'])->name('event-categories.create');
+    Route::post('/event-categories', [AdminEventCategoryController::class, 'store'])->name('event-categories.store');
+    Route::get('/event-categories/{eventCategory}/edit', [AdminEventCategoryController::class, 'edit'])->name('event-categories.edit');
+    Route::put('/event-categories/{eventCategory}', [AdminEventCategoryController::class, 'update'])->name('event-categories.update');
+    Route::delete('/event-categories/{eventCategory}', [AdminEventCategoryController::class, 'destroy'])->name('event-categories.destroy');
     // AI - Intelligence Artificielle
     Route::get('/ai/dashboard', [AIController::class, 'dashboard'])->name('ai.dashboard');
     Route::get('/ai/anomalies', [AIController::class, 'organizationsWithAnomalies'])->name('ai.anomalies');

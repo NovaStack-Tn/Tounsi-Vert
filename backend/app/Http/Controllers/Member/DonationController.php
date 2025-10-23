@@ -123,12 +123,13 @@ class  DonationController extends Controller
      */
     public function create(Request $request)
     {
-        $organizations = Organization::where('is_verified', true)->get();
-        $events = Event::where('is_published', true)->get();
-        
         // If coming from event donation link
         $eventId = $request->query('event_id');
-        $event = $eventId ? Event::find($eventId) : null;
+        $event = $eventId ? Event::with('organization')->find($eventId) : null;
+
+        // Only load organizations and events if NOT donating to a specific event
+        $organizations = $event ? collect() : Organization::where('is_verified', true)->get();
+        $events = $event ? collect() : Event::where('is_published', true)->get();
 
         return view('member.donations.create', compact('organizations', 'events', 'event'));
     }
@@ -139,7 +140,12 @@ class  DonationController extends Controller
     public function store(StoreDonationRequest $request)
     {
         try {
-            DB::transaction(function () use ($request) {
+            $eventId = null;
+            
+            DB::transaction(function () use ($request, &$eventId) {
+                // Store event ID for redirect
+                $eventId = $request->event_id;
+                
                 // Create participation
                 $participation = Participation::create([
                     'user_id' => auth()->id(),
@@ -167,7 +173,15 @@ class  DonationController extends Controller
                 auth()->user()->increment('score', floor($request->amount));
             });
 
-            return redirect()->route('donations.index')->with('success', 'Donation created successfully!');
+            // Redirect back to event if donating to a specific event, otherwise to donations index
+            if ($eventId) {
+                return redirect()->route('events.show', $eventId)
+                    ->with('success', 'Thank you for your donation! Your support makes a real difference.');
+            }
+            
+            return redirect()->route('donations.index')
+                ->with('success', 'Donation created successfully!');
+                
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'An error occurred while processing your donation.');
         }
@@ -367,8 +381,14 @@ class  DonationController extends Controller
      */
     public function createForEvent(Event $event)
     {
-        $organizations = Organization::where('is_verified', true)->get();
-        return view('member.donations.create', compact('event', 'organizations'));
+        // Load organization relationship
+        $event->load('organization');
+        
+        // Empty collections since we're donating to a specific event
+        $organizations = collect();
+        $events = collect();
+        
+        return view('member.donations.create', compact('event', 'organizations', 'events'));
     }
 
     /**

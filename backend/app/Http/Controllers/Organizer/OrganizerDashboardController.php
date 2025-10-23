@@ -11,9 +11,11 @@ class OrganizerDashboardController extends Controller
     {
         $user = auth()->user();
         
-        // Get user's single organization
+        // Get user's single organization with all necessary relationships for insights
         $organization = $user->organizationsOwned()
-            ->with(['category', 'events.category', 'events.reviews', 'events.participations', 'events.donations', 'followers'])
+            ->with(['category', 'events.category', 'events.reviews', 'events.participations', 'events.donations', 'followers', 'donations'])
+            ->withCount(['events', 'followers'])
+            ->withSum('donations', 'amount')
             ->first();
         
         // If no organization, redirect to create
