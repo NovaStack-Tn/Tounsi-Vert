@@ -8,7 +8,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2><i class="bi bi-robot text-primary me-2"></i>Dashboard Intelligence Artificielle</h2>
-            <p class="text-muted">Insights et analyses automatiques de la plateforme</p>
+
         </div>
         <div>
             <a href="{{ route('admin.ai.anomalies') }}" class="btn btn-warning me-2">
@@ -19,6 +19,70 @@
             </a>
         </div>
     </div>
+
+    <!-- Gemini Setup Notice -->
+    @if(empty(config('services.gemini.api_key')))
+        <div class="alert alert-warning border-warning shadow-sm mb-4">
+            <div class="d-flex align-items-start">
+                <i class="bi bi-exclamation-triangle-fill me-3" style="font-size: 2rem;"></i>
+                <div class="flex-grow-1">
+                    <h5 class="alert-heading">⚠️ Gemini API Not Configured</h5>
+                    <p class="mb-2">To use AI-powered insights, you need to configure your Google Gemini API key.</p>
+                    
+                    <div class="mt-3 p-3 bg-white rounded">
+                        <h6><i class="bi bi-1-circle-fill text-primary me-2"></i>Get Free API Key:</h6>
+                        <p class="mb-2">Visit: <a href="https://makersuite.google.com/app/apikey" target="_blank" class="fw-bold">https://makersuite.google.com/app/apikey</a></p>
+                        
+                        <h6 class="mt-3"><i class="bi bi-2-circle-fill text-primary me-2"></i>Add to .env file:</h6>
+                        <pre class="bg-dark text-white p-3 rounded"><code>GEMINI_API_KEY=your_api_key_here
+GEMINI_MODEL=gemini-pro</code></pre>
+                        
+                        <h6 class="mt-3"><i class="bi bi-3-circle-fill text-primary me-2"></i>Clear cache:</h6>
+                        <pre class="bg-dark text-white p-3 rounded"><code>php artisan config:clear</code></pre>
+                    </div>
+                    
+                    <p class="mt-3 mb-0">
+                        <i class="bi bi-book me-1"></i>
+                        <strong>Full Documentation:</strong> See <code>GEMINI_QUICK_START.md</code> in the project root.
+                    </p>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- AI Status Test Card -->
+    @if(!empty(config('services.gemini.api_key')))
+        <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card-body text-white">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="mb-2">
+                            <i class="bi bi-robot me-2"></i>
+                            Gemini AI Status
+                        </h5>
+                        <p class="mb-1">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            API Key: Configured
+                        </p>
+                        <p class="mb-1">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            Model: {{ config('services.gemini.model', 'gemini-pro') }}
+                        </p>
+                        <p class="mb-0">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            AI Insights: {{ isset($insights['ai_insights']) && !empty($insights['ai_insights']) ? 'Active' : 'Fallback Mode' }}
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="display-1">
+                            <i class="bi bi-stars"></i>
+                        </div>
+                        <p class="mb-0 small">Powered by Google Gemini</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <!-- Santé de la Plateforme -->
     <div class="card border-0 shadow-sm mb-4">
@@ -197,7 +261,7 @@
         </div>
 
         <!-- Alertes -->
-        @if(count($insights['alerts']) > 0)
+        @if(isset($insights['alerts']) && is_array($insights['alerts']) && count($insights['alerts']) > 0)
             <div class="col-lg-12 mb-4">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white">
@@ -205,11 +269,13 @@
                     </div>
                     <div class="card-body">
                         @foreach($insights['alerts'] as $alert)
-                            <div class="alert alert-{{ $alert['type'] }} d-flex align-items-center">
+                            <div class="alert alert-{{ $alert['type'] ?? 'info' }} d-flex align-items-center">
                                 <i class="bi bi-exclamation-triangle-fill me-3" style="font-size: 1.5rem;"></i>
                                 <div class="flex-grow-1">
-                                    <strong>{{ $alert['message'] }}</strong>
-                                    <p class="mb-0 small">Action recommandée: {{ $alert['action'] }}</p>
+                                    <strong>{{ $alert['message'] ?? $alert }}</strong>
+                                    @if(isset($alert['action']))
+                                        <p class="mb-0 small">Action recommandée: {{ $alert['action'] }}</p>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach
