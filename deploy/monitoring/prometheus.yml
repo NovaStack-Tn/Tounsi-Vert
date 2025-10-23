@@ -1,0 +1,31 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['prometheus:9090']
+
+  - job_name: 'laravel-app'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['nginx:80']    # or 'app:80' if your app exposes HTTP directly
+    scheme: http
+
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['localhost:9100']   # when node-exporter uses host network
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+
+  - job_name: 'php-fpm'
+    static_configs:
+      - targets: ['php-fpm-exporter:9253']
+remote_write:
+  - url: https://prometheus-prod-65-prod-eu-west-2.grafana.net/api/prom/push
+    basic_auth:
+      username: 2754551
+      password: glc_eyJvIjoiMTU2OTIzMSIsIm4iOiJzdGFjay0xNDE1MTU4LWFsbG95LXRvdW5zaXZlcnQiLCJrIjoiUGEwMmo5ZzdVZTdXQ0ExYzd2bmRVNzMzIiwibSI6eyJyIjoicHJvZC1ldS13ZXN0LTIifX0=
+scrape_configs:

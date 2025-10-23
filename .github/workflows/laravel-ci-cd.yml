@@ -1,0 +1,166 @@
+name: Laravel CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-and-deploy:
+    name: Test and Deploy TounsiVert
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: tounsivert_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Setup PHP 8.1 with Xdebug coverage
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mbstring, pdo_mysql, intl, gd, xml
+          coverage: xdebug
+
+      # Step 3: Cache Composer dependencies
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: backend/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      # Step 4: Install Composer dependencies
+      - name: Install Composer dependencies
+        working-directory: backend
+        run: composer install --no-progress --no-interaction --prefer-dist --optimize-autoloader
+
+      # Step 5: Setup environment and configure database
+      - name: Setup environment
+        working-directory: backend
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          echo "APP_ENV=testing" >> .env
+          echo "DB_CONNECTION=mysql" >> .env
+          echo "DB_HOST=127.0.0.1" >> .env
+          echo "DB_PORT=3306" >> .env
+          echo "DB_DATABASE=tounsivert_test" >> .env
+          echo "DB_USERNAME=root" >> .env
+          echo "DB_PASSWORD=password" >> .env
+
+      # Step 6: Wait for MySQL to be ready
+      - name: Wait for MySQL
+        run: |
+          echo "Waiting for MySQL to be ready..."
+          for i in {1..30}; do
+            if mysqladmin ping -h"127.0.0.1" -P3306 -uroot -ppassword --silent; then
+              echo "MySQL is ready!"
+              break
+            fi
+            echo "Waiting for MySQL... ($i/30)"
+            sleep 2
+          done
+          mysql -h127.0.0.1 -P3306 -uroot -ppassword -e "SELECT 1" tounsivert_test
+
+      # Step 7: Run database migrations
+      - name: Run migrations
+        working-directory: backend
+        run: php artisan migrate --force
+
+      # Step 8: Run PHPUnit tests with coverage
+      - name: Run tests with coverage
+        working-directory: backend
+        run: php -d xdebug.mode=coverage ./vendor/bin/phpunit --coverage-clover coverage.xml
+
+      # Step 9: Cache Node dependencies
+      - name: Cache Node dependencies
+        uses: actions/cache@v3
+        with:
+          path: backend/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('backend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # Step 10: Build frontend assets (Laravel Vite)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install npm dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Build frontend assets
+        working-directory: backend
+        run: npm run build
+
+
+      # Step 11: Run SonarQube code quality scan
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      # Step 12: Build and push Docker image
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/tounsivert:latest
+            ${{ secrets.DOCKER_USERNAME }}/tounsivert:${{ github.sha }}
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/tounsivert:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/tounsivert:buildcache,mode=max
+
+      # Summary on failure
+      - name: Workflow failure summary
+        if: failure()
+        run: |
+          echo "::error::❌ Laravel CI/CD Pipeline failed!"
+          echo "### ❌ Workflow Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Project:** TounsiVert" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Actor:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Please check the logs above for more details." >> $GITHUB_STEP_SUMMARY
+
+      # Success summary
+      - name: Workflow success summary
+        if: success()
+        run: |
+          echo "### ✅ Workflow Completed Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Project:** TounsiVert" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Docker Image:** ${{ secrets.DOCKER_USERNAME }}/tounsivert:${{ github.sha }}" >> $GITHUB_STEP_SUMMARY

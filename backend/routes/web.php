@@ -27,7 +27,16 @@ use App\Http\Controllers\Admin\AdminEventCategoryController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminVehiculeController;
 use App\Http\Controllers\Admin\AIController;
+use App\Http\Controllers\MetricsController;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Metrics Endpoint (Prometheus)
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/metrics', [MetricsController::class, 'index'])->name('metrics');
 
 /*
 |--------------------------------------------------------------------------

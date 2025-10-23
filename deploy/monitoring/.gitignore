@@ -1,0 +1,17 @@
+# Environment variables
+.env
+
+# Grafana dashboards (if custom/sensitive)
+grafana/provisioning/dashboards/json/*.json
+
+# Alert rules (may contain sensitive info)
+alerts/*.yml
+!alerts/example-alerts.yml
+
+# Backup files
+*.backup
+*.bak
+
+# OS files
+.DS_Store
+Thumbs.db
