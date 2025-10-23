@@ -132,7 +132,14 @@ class OrganizerAiController extends Controller
             $context .= "Total collecté (90j): " . number_format($totalAmount, 2) . " TND\n";
             $context .= "Nombre de dons: {$donationCount}\n";
             
-            $prompt = "Génère exactement 3 recommandations courtes (une ligne chacune) en français pour améliorer les campagnes de dons de cette organisation écologique:\n\n{$context}\n\nFocus: actions concrètes et réalisables.";
+            // Add variation to prompts to get different results each time
+            $variations = [
+                "Génère 3 recommandations innovantes et uniques (une ligne chacune) en français pour booster les campagnes de dons de cette organisation écologique:\n\n{$context}\n\nSois créatif et propose des idées différentes à chaque fois.",
+                "Propose 3 actions stratégiques différentes (une ligne chacune) en français pour optimiser les collectes de dons:\n\n{$context}\n\nFocus: approches modernes et efficaces.",
+                "Liste 3 tactiques concrètes et variées (une ligne chacune) en français pour améliorer l'engagement des donateurs:\n\n{$context}\n\nPense à des angles différents."
+            ];
+            
+            $prompt = $variations[array_rand($variations)] . "\n[Timestamp: " . time() . "]";
 
             // Try OpenAI first
             if (config('services.openai.api_key')) {
@@ -141,11 +148,13 @@ class OrganizerAiController extends Controller
                     ->post('https://api.openai.com/v1/chat/completions', [
                         'model' => 'gpt-3.5-turbo',
                         'messages' => [
-                            ['role' => 'system', 'content' => 'Tu es un consultant en stratégie de dons.'],
+                            ['role' => 'system', 'content' => 'Tu es un consultant créatif en stratégie de dons. Propose toujours des idées nouvelles et variées.'],
                             ['role' => 'user', 'content' => $prompt]
                         ],
                         'max_tokens' => 150,
-                        'temperature' => 0.8,
+                        'temperature' => 1.0,
+                        'presence_penalty' => 0.6,
+                        'frequency_penalty' => 0.6,
                     ]);
 
                 if ($response->successful()) {
@@ -169,7 +178,18 @@ class OrganizerAiController extends Controller
     private function generateThankYouTemplate($orgName)
     {
         try {
-            $prompt = "Écris un message de remerciement chaleureux et court (4-5 lignes) en français pour les donateurs de {$orgName}, une organisation écologique. Le message doit être personnel, authentique et prêt à envoyer.";
+            // Add variation to get different thank-you messages each time
+            $styles = [
+                "formel et professionnel",
+                "chaleureux et familier",
+                "poétique et inspirant",
+                "direct et sincère",
+                "enthousiaste et motivant"
+            ];
+            
+            $style = $styles[array_rand($styles)];
+            
+            $prompt = "Écris un message de remerciement unique et {$style} (4-5 lignes) en français pour les donateurs de {$orgName}, une organisation écologique. Sois créatif et original. Le message doit être prêt à envoyer.\n[Style: {$style}] [Timestamp: " . time() . "]";
 
             // Try OpenAI
             if (config('services.openai.api_key')) {
@@ -178,11 +198,13 @@ class OrganizerAiController extends Controller
                     ->post('https://api.openai.com/v1/chat/completions', [
                         'model' => 'gpt-3.5-turbo',
                         'messages' => [
-                            ['role' => 'system', 'content' => 'Tu es un expert en communication pour organisations écologiques.'],
+                            ['role' => 'system', 'content' => 'Tu es un expert créatif en communication pour organisations écologiques. Génère toujours des messages uniques et variés.'],
                             ['role' => 'user', 'content' => $prompt]
                         ],
                         'max_tokens' => 200,
-                        'temperature' => 0.9,
+                        'temperature' => 1.0,
+                        'presence_penalty' => 0.7,
+                        'frequency_penalty' => 0.7,
                     ]);
 
                 if ($response->successful()) {
@@ -220,19 +242,23 @@ class OrganizerAiController extends Controller
      */
     private function generateFallbackActions($donationCount)
     {
+        $allActions = [];
+        
         if ($donationCount === 0) {
-            return [
-                "Lancez une campagne de sensibilisation sur les réseaux sociaux",
-                "Organisez un événement écologique pour attirer de nouveaux donateurs",
-                "Créez une newsletter mensuelle pour partager vos impacts"
+            $allActions = [
+                ["Lancez une campagne de sensibilisation sur les réseaux sociaux", "Organisez un événement écologique pour attirer de nouveaux donateurs", "Créez une newsletter mensuelle pour partager vos impacts"],
+                ["Développez une stratégie de communication digitale ciblée", "Proposez des partenariats avec des entreprises locales", "Créez du contenu vidéo montrant l'impact de votre mission"],
+                ["Organisez des webinaires sur les enjeux écologiques", "Lancez un programme d'ambassadeurs bénévoles", "Créez une page de don optimisée sur votre site web"]
+            ];
+        } else {
+            $allActions = [
+                ["Remerciez personnellement vos donateurs réguliers pour renforcer la fidélité", "Partagez l'impact concret de leurs dons via des photos et témoignages", "Proposez des options de dons récurrents pour stabiliser vos revenus"],
+                ["Organisez un événement de remerciement pour vos donateurs", "Envoyez des rapports d'impact trimestriels détaillés", "Créez un programme de parrainage entre donateurs"],
+                ["Lancez une campagne de fin d'année avec objectif précis", "Segmentez vos donateurs pour une communication personnalisée", "Proposez des niveaux de dons avec reconnaissance publique"]
             ];
         }
-
-        return [
-            "Remerciez personnellement vos donateurs réguliers pour renforcer la fidélité",
-            "Partagez l'impact concret de leurs dons via des photos et témoignages",
-            "Proposez des options de dons récurrents pour stabiliser vos revenus"
-        ];
+        
+        return $allActions[array_rand($allActions)];
     }
 
     /**
@@ -240,7 +266,19 @@ class OrganizerAiController extends Controller
      */
     private function generateFallbackThankYou($orgName)
     {
-        return "Chère donatrice, cher donateur,\n\nAu nom de toute l'équipe de {$orgName}, nous vous remercions sincèrement pour votre généreuse contribution. Votre soutien est essentiel pour poursuivre nos actions en faveur de l'environnement.\n\nGrâce à vous, nous pouvons continuer à protéger notre planète et créer un avenir plus vert.\n\nAvec toute notre gratitude,\nL'équipe {$orgName}";
+        $templates = [
+            "Chère donatrice, cher donateur,\n\nAu nom de toute l'équipe de {$orgName}, nous vous remercions sincèrement pour votre généreuse contribution. Votre soutien est essentiel pour poursuivre nos actions en faveur de l'environnement.\n\nGrâce à vous, nous pouvons continuer à protéger notre planète et créer un avenir plus vert.\n\nAvec toute notre gratitude,\nL'équipe {$orgName}",
+            
+            "Bonjour,\n\nToute l'équipe de {$orgName} vous exprime sa profonde reconnaissance pour votre don généreux. Votre geste fait une réelle différence dans notre combat pour la protection de l'environnement.\n\nEnsemble, nous bâtissons un futur plus durable. Merci d'être à nos côtés dans cette mission !\n\nCordialement,\n{$orgName}",
+            
+            "Cher.ère ami.e de la nature,\n\nVotre contribution à {$orgName} nous touche profondément. Chaque don, comme le vôtre, nous permet d'avancer concrètement dans nos projets écologiques.\n\nVous êtes un maillon essentiel de notre action collective. Merci infiniment pour votre confiance et votre engagement !\n\nÀ bientôt,\nL'équipe {$orgName}",
+            
+            "Un grand merci !\n\nVotre soutien à {$orgName} illumine notre journée et renforce notre détermination. Grâce à votre générosité, nous pouvons poursuivre nos actions concrètes pour l'environnement.\n\nVotre engagement fait la différence. Nous sommes fiers de vous compter parmi nos soutiens !\n\nChaleureusement,\n{$orgName}",
+            
+            "Bonjour cher donateur, chère donatrice,\n\nC'est avec une immense gratitude que {$orgName} reçoit votre don. Votre acte de générosité nous permet de continuer à œuvrer pour un monde plus respectueux de la nature.\n\nVous faites partie de notre famille écologique. Merci du fond du cœur !\n\nBien à vous,\nL'équipe {$orgName}"
+        ];
+        
+        return $templates[array_rand($templates)];
     }
 
     /**
