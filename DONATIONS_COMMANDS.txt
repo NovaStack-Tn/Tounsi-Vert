@@ -1,0 +1,273 @@
+=====================================
+DONATIONS MODULE - COMMAND REFERENCE
+=====================================
+
+📦 INSTALLATION COMMANDS
+========================
+
+1. Install PDF Package:
+   cd backend
+   composer require barryvdh/laravel-dompdf
+
+2. Clear Cache:
+   php artisan config:clear
+   php artisan route:clear
+   php artisan cache:clear
+   php artisan view:clear
+
+3. Verify Routes:
+   php artisan route:list --name=donations
+
+
+🧪 TESTING COMMANDS
+===================
+
+1. Start Development Server:
+   php artisan serve
+
+2. Check Route List:
+   php artisan route:list | findstr donations
+
+3. Check Migrations:
+   php artisan migrate:status
+
+4. Run Migrations (if needed):
+   php artisan migrate
+
+
+📊 DATABASE QUERIES (for testing)
+==================================
+
+-- Check donations table
+SELECT * FROM donations;
+
+-- Check organizations
+SELECT id, name, is_verified FROM organizations;
+
+-- Check donations with organization
+SELECT d.*, o.name as org_name 
+FROM donations d 
+LEFT JOIN organizations o ON d.organization_id = o.id;
+
+-- Count donations by organization
+SELECT o.name, COUNT(d.id) as total_donations, SUM(d.amount) as total_amount
+FROM organizations o
+LEFT JOIN donations d ON o.id = d.organization_id
+GROUP BY o.id, o.name;
+
+
+🌐 ACCESS URLS (after php artisan serve)
+=========================================
+
+Main Pages:
+- List Donations: http://localhost:8000/donations
+- Create Donation: http://localhost:8000/donations/create
+- Statistics: http://localhost:8000/donations/statistics
+
+Exports:
+- PDF Export: http://localhost:8000/donations-export/pdf
+- CSV Export: http://localhost:8000/donations-export/csv
+
+Legacy:
+- Event Donation: http://localhost:8000/events/{id}/donate
+
+
+🔍 DEBUGGING COMMANDS
+=====================
+
+1. Check Laravel Logs:
+   tail -f storage/logs/laravel.log
+   # Windows:
+   Get-Content storage/logs/laravel.log -Wait -Tail 50
+
+2. Clear All Cache:
+   php artisan optimize:clear
+
+3. Check Composer Packages:
+   composer show | findstr dompdf
+
+4. Dump Autoload:
+   composer dump-autoload
+
+
+🛠️ COMMON FIXES
+================
+
+Issue: Routes not working
+Fix:
+   php artisan route:clear
+   php artisan config:clear
+   php artisan cache:clear
+
+Issue: PDF not generating
+Fix:
+   composer require barryvdh/laravel-dompdf
+   php artisan config:clear
+
+Issue: Views not updating
+Fix:
+   php artisan view:clear
+
+Issue: Database connection error
+Fix:
+   Check .env file
+   php artisan config:clear
+
+
+📝 GIT COMMANDS (if using Git)
+===============================
+
+1. Stage Changes:
+   git add backend/app/Models/Donation.php
+   git add backend/app/Http/Controllers/Member/DonationController.php
+   git add backend/app/Http/Requests/
+   git add backend/resources/views/member/donations/
+   git add backend/routes/web.php
+   git add *.md
+
+2. Commit:
+   git commit -m "feat: implement complete donations module with CRUD, statistics, and export"
+
+3. Push:
+   git push origin main
+
+
+🎯 QUICK TEST SEQUENCE
+=======================
+
+1. Install package:
+   cd backend && composer require barryvdh/laravel-dompdf
+
+2. Clear cache:
+   php artisan optimize:clear
+
+3. Start server:
+   php artisan serve
+
+4. Login and navigate to:
+   http://localhost:8000/donations
+
+5. Create a test donation:
+   - Click "New Donation"
+   - Select organization
+   - Enter amount: 50
+   - Submit
+
+6. Test filters:
+   - Select organization filter
+   - Click "Filter"
+
+7. View statistics:
+   - Click "Statistics" button
+
+8. Test exports:
+   - Click "Export PDF"
+   - Click "Export CSV"
+
+
+✅ VERIFICATION CHECKLIST
+==========================
+
+□ Package installed (barryvdh/laravel-dompdf)
+□ Routes visible in route:list
+□ Can access /donations page
+□ Can create new donation
+□ Can view donation details
+□ Can filter donations
+□ Statistics page works
+□ Charts display correctly
+□ PDF export downloads
+□ CSV export downloads
+□ Edit button works (pending only)
+□ Delete button works (pending/failed only)
+□ Authorization checks work
+
+
+📚 DOCUMENTATION FILES
+======================
+
+1. DONATIONS_MODULE_DOCUMENTATION.md
+   - Complete technical documentation
+   - Architecture details
+   - API reference
+
+2. DONATIONS_QUICK_START.md
+   - Installation guide
+   - Quick testing steps
+   - Debugging tips
+
+3. DONATIONS_MODULE_SUMMARY.md
+   - Implementation summary
+   - Files created/modified
+   - Requirements fulfillment
+
+4. DONATIONS_COMMANDS.txt (this file)
+   - Command reference
+   - Quick commands
+   - Testing sequence
+
+
+🎓 USEFUL ARTISAN COMMANDS
+===========================
+
+php artisan route:list                # List all routes
+php artisan route:list --name=donations  # Filter routes
+php artisan migrate                   # Run migrations
+php artisan migrate:status            # Check migration status
+php artisan db:seed                   # Seed database
+php artisan tinker                    # Interactive shell
+php artisan make:controller           # Create controller
+php artisan make:model                # Create model
+php artisan make:migration            # Create migration
+php artisan make:request              # Create form request
+php artisan optimize:clear            # Clear all cache
+php artisan serve                     # Start dev server
+
+
+📊 COMPOSER COMMANDS
+====================
+
+composer require barryvdh/laravel-dompdf  # Install PDF package
+composer install                          # Install dependencies
+composer update                           # Update dependencies
+composer dump-autoload                    # Regenerate autoload
+composer show                            # List packages
+composer show barryvdh/laravel-dompdf   # Show package info
+
+
+🔐 PERMISSION COMMANDS (Linux/Mac)
+===================================
+
+chmod -R 775 storage
+chmod -R 775 bootstrap/cache
+chown -R www-data:www-data storage
+chown -R www-data:www-data bootstrap/cache
+
+
+🎉 SUCCESS INDICATORS
+=====================
+
+✅ composer show shows barryvdh/laravel-dompdf
+✅ php artisan route:list shows donation routes
+✅ Can access http://localhost:8000/donations
+✅ Can create, view, edit, delete donations
+✅ Statistics page shows charts
+✅ PDF and CSV exports work
+✅ No errors in laravel.log
+
+
+📞 SUPPORT RESOURCES
+====================
+
+Laravel Docs: https://laravel.com/docs
+Chart.js Docs: https://www.chartjs.org/docs
+DomPDF Docs: https://github.com/barryvdh/laravel-dompdf
+Bootstrap Docs: https://getbootstrap.com/docs
+
+
+=====================================
+END OF COMMAND REFERENCE
+=====================================
+
+Last Updated: October 23, 2025
+Module Status: ✅ COMPLETE
