@@ -51,5 +51,24 @@ class DatabaseSeeder extends Seeder
             'city' => 'Ben Arous',
             'score' => 25,
         ]);
+
+        // Create additional member users for testing
+        for ($i = 1; $i <= 5; $i++) {
+            \App\Models\User::create([
+                'first_name' => 'Member',
+                'last_name' => "Test{$i}",
+                'email' => "member{$i}@tounsivert.tn",
+                'password' => bcrypt('password'),
+                'role' => 'member',
+                'region' => 'Tunis',
+                'city' => 'Tunis',
+                'score' => rand(10, 100),
+            ]);
+        }
+
+        // Seed reports after users and organizations are created
+        $this->call([
+            ReportSeeder::class,
+        ]);
     }
 }

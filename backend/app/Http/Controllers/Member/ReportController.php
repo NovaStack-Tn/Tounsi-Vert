@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Member;
 use App\Models\Event;
 use App\Http\Controllers\Controller;
 use App\Models\Report;
+use App\Services\ReportAnalysisService;
 use Illuminate\Http\Request;
 
 
@@ -49,7 +50,19 @@ class ReportController extends Controller
             'organization_id' => 'nullable|exists:organizations,id',
             'reason' => 'required|string|max:200',
             'details' => 'nullable|string|max:2000',
+            'category' => 'required|in:spam,inappropriate,fraud,harassment,violence,misinformation,copyright,other',
+            'priority' => 'nullable|in:low,medium,high,critical',
         ]);
+
+        // AI Analysis
+        $analysisService = new ReportAnalysisService();
+        $aiAnalysis = $analysisService->analyzeReportContent(
+            $request->reason,
+            $request->details ?? ''
+        );
+
+        // Use AI suggested priority if user didn't specify
+        $priority = $request->priority ?? $aiAnalysis['priority'];
 
         Report::create([
             'user_id' => auth()->id(),
@@ -57,10 +70,23 @@ class ReportController extends Controller
             'organization_id' => $request->organization_id,
             'reason' => $request->reason,
             'details' => $request->details,
+            'category' => $request->category,
+            'priority' => $priority,
             'status' => 'open',
+            'ai_risk_score' => $aiAnalysis['risk_score'],
+            'ai_suggested_category' => $aiAnalysis['suggested_category'],
+            'ai_confidence' => $aiAnalysis['confidence'],
+            'ai_auto_flagged' => $aiAnalysis['auto_flag'],
+            'ai_analysis' => $aiAnalysis,
         ]);
 
+        $message = 'Thank you for your report! We will review it soon.';
+        
+        if ($aiAnalysis['requires_immediate_attention']) {
+            $message = 'Your report has been flagged for immediate attention. Our team will review it as soon as possible.';
+        }
+
         return redirect()->route('member.reports.index')
-            ->with('success', 'Thank you for your report! We will contact you soon.');
+            ->with('success', $message);
     }
 }

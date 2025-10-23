@@ -71,7 +71,32 @@ class OrganizationController extends Controller
             })
             ->avg('rate') ?? 0;
 
-        return view('organizations.show', compact('organization', 'followersCount', 'isFollowing', 'totalDonations', 'averageRating', 'events'));
+        // Get reports with actions (JOIN between reports and report_actions)
+        $reports = $organization->reports()
+            ->with(['user', 'actions.admin', 'latestAction'])
+            ->where('status', '!=', 'dismissed')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Count reports by status
+        $reportsCount = [
+            'total' => $organization->reports()->count(),
+            'open' => $organization->reports()->where('status', 'open')->count(),
+            'in_review' => $organization->reports()->where('status', 'in_review')->count(),
+            'resolved' => $organization->reports()->where('status', 'resolved')->count(),
+        ];
+
+        return view('organizations.show', compact(
+            'organization', 
+            'followersCount', 
+            'isFollowing', 
+            'totalDonations', 
+            'averageRating', 
+            'events',
+            'reports',
+            'reportsCount'
+        ));
     }
 
     public function follow(Organization $organization)
