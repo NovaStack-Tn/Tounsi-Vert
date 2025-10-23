@@ -86,6 +86,7 @@
                         <a href="{{ route('organizer.donations') }}" class="btn btn-success">
                             <i class="bi bi-heart me-1"></i>Donations
                         </a>
+                        @include('admin.organizations._insights_modal', ['organization' => $organization])
                     </div>
                 </div>
             </div>

@@ -66,32 +66,8 @@
         </div>
     </div>
 
-    <!-- Filter Section -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body">
-            <form method="GET" action="{{ route('admin.events.index') }}" class="row g-3">
-                <div class="col-md-10">
-                    <label for="organization_id" class="form-label fw-bold">
-                        <i class="bi bi-building me-2"></i>Filter by Organization
-                    </label>
-                    <select name="organization_id" id="organization_id" class="form-select" onchange="this.form.submit()">
-                        <option value="all" {{ $organizationFilter == 'all' ? 'selected' : '' }}>All Organizations</option>
-                        @foreach($organizations as $org)
-                            <option value="{{ $org->id }}" {{ $organizationFilter == $org->id ? 'selected' : '' }}>
-                                {{ $org->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">&nbsp;</label>
-                    <a href="{{ route('admin.events.index') }}" class="btn btn-secondary w-100">
-                        <i class="bi bi-arrow-counterclockwise me-2"></i>Reset
-                    </a>
-                </div>
-            </form>
-        </div>
-    </div>
+    <!-- Advanced Filters Component -->
+    @include('admin.events._filters')
 
     <!-- Events List -->
     <div class="card border-0 shadow-sm">
@@ -144,13 +120,18 @@
                             </div>
                         </div>
                         <div class="col-md-2 text-end">
-                            <form action="{{ route('admin.events.destroy', $event) }}" method="POST" onclick="event.stopPropagation();">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this event? This action cannot be undone.')">
-                                    <i class="bi bi-trash me-1"></i>Delete
-                                </button>
-                            </form>
+                            <div onclick="event.stopPropagation();">
+                                <a href="{{ route('admin.events.ics', $event) }}" class="btn btn-info btn-sm mb-2 w-100" title="Download Calendar">
+                                    <i class="bi bi-calendar-plus me-1"></i>ICS
+                                </a>
+                                <form action="{{ route('admin.events.destroy', $event) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm w-100" onclick="return confirm('Are you sure you want to delete this event? This action cannot be undone.')">
+                                        <i class="bi bi-trash me-1"></i>Delete
+                                    </button>
+                                </form>
+                            </div>
                             <small class="text-muted d-block mt-2">
                                 {{ $event->created_at->diffForHumans() }}
                             </small>
