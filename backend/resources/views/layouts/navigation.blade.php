@@ -15,6 +15,12 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('member.ai.recommendations')" :active="request()->routeIs('member.ai.*')">
+                        <span class="flex items-center">
+                            🤖 {{ __('Recommandations IA') }}
+                            <span class="ml-1 px-1.5 py-0.5 text-xs bg-blue-500 text-white rounded">NEW</span>
+                        </span>
+                    </x-nav-link>
                 </div>
             </div>
 

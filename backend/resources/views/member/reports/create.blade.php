@@ -33,22 +33,56 @@
                             </div>
                         @endif
 
+                        <!-- Category -->
+                        <div class="mb-4">
+                            <label for="category" class="form-label fw-bold">
+                                <i class="bi bi-tag text-danger me-2"></i>Report Category <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select @error('category') is-invalid @enderror" id="category" name="category" required>
+                                <option value="">Select a category...</option>
+                                <option value="spam">Spam</option>
+                                <option value="inappropriate">Inappropriate Content</option>
+                                <option value="fraud">Fraud/Scam</option>
+                                <option value="harassment">Harassment</option>
+                                <option value="violence">Violence</option>
+                                <option value="misinformation">Misinformation</option>
+                                <option value="copyright">Copyright Violation</option>
+                                <option value="other">Other</option>
+                            </select>
+                            @error('category')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Priority -->
+                        <div class="mb-4">
+                            <label for="priority" class="form-label fw-bold">
+                                <i class="bi bi-exclamation-circle text-warning me-2"></i>Priority Level
+                            </label>
+                            <select class="form-select @error('priority') is-invalid @enderror" id="priority" name="priority">
+                                <option value="low">Low - Minor issue</option>
+                                <option value="medium" selected>Medium - Needs attention</option>
+                                <option value="high">High - Serious concern</option>
+                                <option value="critical">Critical - Immediate action required</option>
+                            </select>
+                            @error('priority')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <!-- Reason -->
                         <div class="mb-4">
                             <label for="reason" class="form-label fw-bold">
-                                <i class="bi bi-exclamation-triangle text-danger me-2"></i>Reason for Report <span class="text-danger">*</span>
+                                <i class="bi bi-exclamation-triangle text-danger me-2"></i>Brief Summary <span class="text-danger">*</span>
                             </label>
-                            <select class="form-select @error('reason') is-invalid @enderror" id="reason" name="reason" required>
-                                <option value="">Select a reason...</option>
-                                <option value="Inappropriate content">Inappropriate content</option>
-                                <option value="Spam or misleading">Spam or misleading</option>
-                                <option value="Fraud or scam">Fraud or scam</option>
-                                <option value="Hate speech or discrimination">Hate speech or discrimination</option>
-                                <option value="Violence or dangerous">Violence or dangerous</option>
-                                <option value="False information">False information</option>
-                                <option value="Copyright violation">Copyright violation</option>
-                                <option value="Other">Other</option>
-                            </select>
+                            <input type="text" 
+                                   class="form-control @error('reason') is-invalid @enderror" 
+                                   id="reason" 
+                                   name="reason" 
+                                   maxlength="200"
+                                   placeholder="Briefly describe the issue (max 200 characters)"
+                                   value="{{ old('reason') }}"
+                                   required>
                             @error('reason')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

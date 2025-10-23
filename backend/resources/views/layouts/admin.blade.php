@@ -149,6 +149,13 @@
                         <span>Reports</span>
                     </a>
                 </li>
+                <li>
+                    <a href="{{ route('admin.ai.dashboard') }}" class="{{ request()->routeIs('admin.ai.*') ? 'active' : '' }}" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);">
+                        <i class="bi bi-robot"></i>
+                        <span>Intelligence IA</span>
+                        <span class="badge bg-primary ms-auto" style="font-size: 0.7rem;">NEW</span>
+                    </a>
+                </li>
             </ul>
 
             <hr style="border-color: rgba(255,255,255,0.1); margin: 20px;">
