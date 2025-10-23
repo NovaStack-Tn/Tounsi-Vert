@@ -15,6 +15,7 @@ use App\Http\Controllers\Member\DashboardController as MemberDashboardController
 use App\Http\Controllers\Organizer\OrganizerEventController;
 use App\Http\Controllers\Organizer\OrganizerOrganizationController;
 use App\Http\Controllers\Organizer\OrganizerDashboardController;
+use App\Http\Controllers\Organizer\OrganizerAiController;
 use App\Http\Controllers\OrganizationRequestController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminOrganizationController;
@@ -134,6 +135,9 @@ Route::middleware(['auth'])->prefix('organizer')->name('organizer.')->group(func
     // Community & Donations
     Route::get('/community', [OrganizerDashboardController::class, 'community'])->name('community');
     Route::get('/donations', [OrganizerDashboardController::class, 'donations'])->name('donations');
+    
+    // AI Insights
+    Route::get('/ai', [OrganizerAiController::class, 'index'])->name('ai');
 });
 
 /*

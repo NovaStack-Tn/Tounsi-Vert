@@ -65,6 +65,33 @@
         </div>
     </div>
 
+    <!-- AI Insights Banner -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="text-white mb-2">
+                                <i class="bi bi-robot me-2"></i>
+                                🤖 Get AI-Powered Insights on Your Donations
+                            </h5>
+                            <p class="text-white mb-0 opacity-75">
+                                Discover trends, get actionable recommendations, and generate personalized thank-you messages with artificial intelligence.
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{{ route('organizer.ai') }}" class="btn btn-light btn-lg">
+                                <i class="bi bi-lightbulb me-2"></i>
+                                View AI Insights
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Donations List -->
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white border-0 p-4">
