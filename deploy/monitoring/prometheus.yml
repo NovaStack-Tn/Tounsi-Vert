@@ -23,9 +23,3 @@ scrape_configs:
   - job_name: 'php-fpm'
     static_configs:
       - targets: ['php-fpm-exporter:9253']
-remote_write:
-  - url: https://prometheus-prod-65-prod-eu-west-2.grafana.net/api/prom/push
-    basic_auth:
-      username: 2754551
-      password: glc_eyJvIjoiMTU2OTIzMSIsIm4iOiJzdGFjay0xNDE1MTU4LWFsbG95LXRvdW5zaXZlcnQiLCJrIjoiUGEwMmo5ZzdVZTdXQ0ExYzd2bmRVNzMzIiwibSI6eyJyIjoicHJvZC1ldS13ZXN0LTIifX0=
-scrape_configs:
