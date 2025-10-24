@@ -358,4 +358,31 @@ class AdminReportController extends Controller
         
         return view('admin.reports.advanced-analytics', compact('analytics', 'filters'));
     }
+    public function export(Request $request, ReportExportService $service)
+    {
+        $validated = $request->validate([
+            'format' => 'required|in:csv,json',
+        ]);
+
+        // Get reports with filters if provided
+        $reports = Report::with(['user', 'event', 'organization', 'resolver'])
+            ->when($request->filled('status'), fn($q) => $q->where('status', $request->status))
+            ->when($request->filled('priority'), fn($q) => $q->where('priority', $request->priority))
+            ->when($request->filled('category'), fn($q) => $q->where('category', $request->category))
+            ->latest()
+            ->get();
+
+        if ($validated['format'] === 'csv') {
+            $csv = $service->exportToCSV($reports);
+
+            return response($csv, 200)
+                ->header('Content-Type', 'text/csv; charset=UTF-8')
+                ->header('Content-Disposition', 'attachment; filename="reports.csv"');
+        }
+
+        // json
+        $json = $service->exportToJSON($reports);
+        return response($json, 200)
+            ->header('Content-Type', 'application/json; charset=UTF-8');
+    }
 }
