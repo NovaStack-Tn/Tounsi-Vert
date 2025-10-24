@@ -25,7 +25,7 @@ return new class extends Migration
             $table->index(['org_category_id'], 'idx_org_category');
             $table->index(['region', 'city'], 'idx_org_location');
             $table->index(['is_verified', 'is_blocked'], 'idx_org_status');
-            $table->index(['user_id'], 'idx_org_owner');
+            $table->index(['owner_id'], 'idx_org_owner');
         });
     }
 
