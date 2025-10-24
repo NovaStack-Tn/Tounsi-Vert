@@ -1,0 +1,529 @@
+@extends('layouts.public')
+
+@section('title', 'Community Blogs - TounsiVert')
+
+@section('content')
+<div class="container py-5">
+    <div class="row">
+        <!-- Main Content - Blog Feed -->
+        <div class="col-lg-8">
+            <!-- Create Blog Section (Auth Users Only) -->
+            @auth
+            <div class="card shadow-sm mb-4" style="border-radius: 15px; border: none;">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start">
+                        <div class="user-avatar-lg text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                             style="width: 50px; height: 50px; background: linear-gradient(135deg, #52b788 0%, #2d6a4f 100%);">
+                            <i class="bi bi-person-fill fs-4"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <form action="{{ route('blogs.store') }}" method="POST" enctype="multipart/form-data" id="blogForm">
+                                @csrf
+                                <input type="hidden" name="ai_assisted" id="aiAssisted" value="0">
+                                
+                                <div class="mb-3">
+                                    <input type="text" 
+                                           class="form-control form-control-lg border-0" 
+                                           name="title"
+                                           placeholder="What's your story?" 
+                                           style="background: #f8f9fa; border-radius: 12px;"
+                                           required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <textarea class="form-control border-0" 
+                                              name="content"
+                                              rows="3" 
+                                              placeholder="Share your thoughts with the community..."
+                                              style="background: #f8f9fa; border-radius: 12px; resize: none;"
+                                              required></textarea>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex gap-2">
+                                        <label class="btn btn-light btn-sm rounded-pill" style="cursor: pointer;" title="Upload Image">
+                                            <i class="bi bi-image text-success"></i>
+                                            <input type="file" name="image" accept="image/*" style="display: none;" onchange="previewMedia(this, 'image')">
+                                        </label>
+                                        <label class="btn btn-light btn-sm rounded-pill" style="cursor: pointer;" title="Upload Video">
+                                            <i class="bi bi-camera-video text-success"></i>
+                                            <input type="file" name="video" accept="video/*" style="display: none;" onchange="previewMedia(this, 'video')">
+                                        </label>
+                                        <button type="button" class="btn btn-light btn-sm rounded-pill" onclick="requestAIHelp()" title="AI Assistance">
+                                            <i class="bi bi-stars text-warning"></i> AI Help
+                                        </button>
+                                    </div>
+                                    <button type="submit" class="btn btn-success rounded-pill px-4">
+                                        <i class="bi bi-send-fill me-1"></i>Post
+                                    </button>
+                                </div>
+                                
+                                <div id="mediaPreview" class="mt-3" style="display: none;"></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endauth
+
+            <!-- Filters & Sort -->
+            <div class="card shadow-sm mb-4" style="border-radius: 15px; border: none;">
+                <div class="card-body p-3">
+                    <form method="GET" action="{{ route('blogs.index') }}" class="row g-2">
+                        <div class="col-md-6">
+                            <input type="text" 
+                                   name="search" 
+                                   class="form-control" 
+                                   placeholder="Search blogs..." 
+                                   value="{{ request('search') }}">
+                        </div>
+                        <div class="col-md-4">
+                            <select name="sort" class="form-select" onchange="this.form.submit()">
+                                <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Latest</option>
+                                <option value="popular" {{ request('sort') == 'popular' ? 'selected' : '' }}>Popular</option>
+                                <option value="most_liked" {{ request('sort') == 'most_liked' ? 'selected' : '' }}>Most Liked</option>
+                                <option value="most_viewed" {{ request('sort') == 'most_viewed' ? 'selected' : '' }}>Most Viewed</option>
+                                <option value="most_commented" {{ request('sort') == 'most_commented' ? 'selected' : '' }}>Most Commented</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Blog Feed -->
+            @forelse($blogs as $blog)
+            <div class="card shadow-sm mb-3 blog-card" style="border-radius: 15px; border: none; transition: all 0.3s; cursor: pointer; overflow: hidden;" 
+                 onclick="window.location='{{ route('blogs.show', $blog) }}'">
+                <div class="card-body p-0">
+                    <!-- Blog Header -->
+                    <div class="p-4 pb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="user-avatar text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 45px; height: 45px; background: linear-gradient(135deg, #52b788 0%, #2d6a4f 100%);">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0 fw-bold">{{ $blog->user->full_name }}</h6>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock me-1"></i>{{ $blog->created_at->diffForHumans() }}
+                                    @if($blog->ai_assisted)
+                                        <span class="badge bg-warning text-dark ms-2"><i class="bi bi-stars"></i> AI Assisted</span>
+                                    @endif
+                                </small>
+                            </div>
+                            @auth
+                                @if(auth()->id() === $blog->user_id || auth()->user()->isAdmin())
+                                <div class="dropdown" onclick="event.stopPropagation();">
+                                    <button class="btn btn-link text-muted" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{{ route('blogs.edit', $blog) }}">
+                                            <i class="bi bi-pencil me-2"></i>Edit
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form action="{{ route('blogs.destroy', $blog) }}" method="POST" id="deleteBlogForm{{ $blog->id }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" class="dropdown-item text-danger" onclick="confirmDelete({{ $blog->id }}, '{{ $blog->title }}')">
+                                                    <i class="bi bi-trash me-2"></i>Delete
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                                @endif
+                            @endauth
+                        </div>
+
+                        <!-- Blog Content -->
+                        <div class="mt-3">
+                            <h5 class="mb-2 fw-bold text-dark">{{ $blog->title }}</h5>
+                            <p class="text-muted mb-3">{{ Str::limit($blog->content, 200) }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Media Display -->
+                    @if($blog->media_type === 'image' && $blog->image_path)
+                    <div class="blog-media">
+                        <img src="{{ Storage::url($blog->image_path) }}" 
+                             alt="{{ $blog->title }}" 
+                             class="img-fluid w-100" 
+                             style="max-height: 500px; object-fit: cover;">
+                    </div>
+                    @endif
+
+                    @if($blog->media_type === 'video' && $blog->video_path)
+                    <div class="blog-media" onclick="event.stopPropagation();">
+                        <video class="w-100" controls style="max-height: 500px; background: #000;">
+                            <source src="{{ Storage::url($blog->video_path) }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    @endif
+
+                    <!-- Blog Actions -->
+                    <div class="p-4 pt-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex gap-4">
+                                <!-- Like -->
+                                @auth
+                                <form action="{{ route('blogs.like', $blog) }}" method="POST" class="d-inline" onclick="event.stopPropagation();">
+                                    @csrf
+                                    <button type="submit" class="btn btn-link text-decoration-none p-0 {{ $blog->isLikedBy() ? 'text-danger' : 'text-muted' }}">
+                                        <i class="bi bi-heart{{ $blog->isLikedBy() ? '-fill' : '' }} me-1"></i>
+                                        <span>{{ $blog->likes_count }}</span>
+                                    </button>
+                                </form>
+                                @else
+                                <span class="text-muted">
+                                    <i class="bi bi-heart me-1"></i>{{ $blog->likes_count }}
+                                </span>
+                                @endauth
+
+                                <!-- Comments -->
+                                <span class="text-muted">
+                                    <i class="bi bi-chat me-1"></i>{{ $blog->comments_count }}
+                                </span>
+
+                                <!-- Views -->
+                                <span class="text-muted">
+                                    <i class="bi bi-eye me-1"></i>{{ $blog->views_count }}
+                                </span>
+                            </div>
+
+                            <!-- Share -->
+                            <button class="btn btn-link text-muted text-decoration-none p-0" onclick="event.stopPropagation();">
+                                <i class="bi bi-share"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @empty
+            <div class="card shadow-sm" style="border-radius: 15px;">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-newspaper text-muted" style="font-size: 4rem;"></i>
+                    <h4 class="mt-3">No blogs yet</h4>
+                    <p class="text-muted">Be the first to share your story!</p>
+                    @auth
+                    <a href="#" class="btn btn-success rounded-pill" onclick="document.querySelector('input[name=title]').focus(); return false;">
+                        <i class="bi bi-plus-circle me-2"></i>Create Blog
+                    </a>
+                    @endauth
+                </div>
+            </div>
+            @endforelse
+
+            <!-- Pagination -->
+            <div class="mt-4">
+                {{ $blogs->links() }}
+            </div>
+        </div>
+
+        <!-- Sidebar - Top Organizations & Ads -->
+        <div class="col-lg-4">
+            <!-- Top Organizations -->
+            <div class="card shadow-sm mb-4" style="border-radius: 15px; border: none; position: sticky; top: 20px;">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-trophy-fill text-warning me-2"></i>Top Organizations</h5>
+                    <small class="text-muted">Supporting our community</small>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    @forelse($topOrganizations as $org)
+                    <a href="{{ route('organizations.show', $org) }}" class="text-decoration-none">
+                        <div class="d-flex align-items-center mb-3 p-3 rounded hover-bg" style="transition: all 0.3s; background: #f8f9fa;">
+                            <div class="me-3">
+                                @if($org->logo_path)
+                                <img src="{{ Storage::url($org->logo_path) }}" 
+                                     alt="{{ $org->name }}" 
+                                     class="rounded-circle"
+                                     style="width: 50px; height: 50px; object-fit: cover;">
+                                @else
+                                <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" 
+                                     style="width: 50px; height: 50px;">
+                                    <i class="bi bi-building"></i>
+                                </div>
+                                @endif
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0 text-dark">{{ Str::limit($org->name, 25) }}</h6>
+                                <small class="text-muted">
+                                    <i class="bi bi-star-fill text-warning"></i> {{ $org->owner->score }} pts
+                                    @if($org->is_verified)
+                                    <i class="bi bi-patch-check-fill text-success ms-1"></i>
+                                    @endif
+                                </small>
+                            </div>
+                        </div>
+                    </a>
+                    @empty
+                    <p class="text-muted text-center py-3">No organizations yet</p>
+                    @endforelse
+                </div>
+            </div>
+
+            <!-- Community Stats -->
+            <div class="card shadow-sm" style="border-radius: 15px; border: none;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-graph-up text-success me-2"></i>Community Stats</h6>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Total Blogs</span>
+                        <span class="fw-bold">{{ $blogs->total() }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Active Writers</span>
+                        <span class="fw-bold">{{ $blogs->pluck('user_id')->unique()->count() }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 15px; border: none; overflow: hidden;">
+            <div class="modal-header border-0 bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Blog
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="mb-2">Are you sure you want to delete this blog?</p>
+                <p class="fw-bold text-dark mb-3" id="blogTitleToDelete"></p>
+                <div class="alert alert-warning d-flex align-items-center" style="border-radius: 10px;">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <small>This action cannot be undone. All comments and likes will be permanently deleted.</small>
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-danger rounded-pill px-4" id="confirmDeleteBtn">
+                    <i class="bi bi-trash me-1"></i>Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<style>
+    .blog-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+    }
+    .hover-bg:hover {
+        background: #e9ecef !important;
+    }
+    
+    /* Custom Toast Notifications */
+    .custom-toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        min-width: 300px;
+        z-index: 9999;
+        animation: slideInRight 0.3s ease;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+    
+    .toast-closing {
+        animation: slideOutRight 0.3s ease;
+    }
+</style>
+
+<script>
+function previewMedia(input, type) {
+    const preview = document.getElementById('mediaPreview');
+    preview.innerHTML = '';
+    
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            preview.style.display = 'block';
+            
+            if (type === 'image') {
+                // Clear video input if exists
+                const videoInput = document.querySelector('input[name="video"]');
+                if (videoInput) videoInput.value = '';
+                
+                preview.innerHTML = `
+                    <div class="position-relative">
+                        <img src="${e.target.result}" class="img-fluid rounded" style="max-height: 300px;">
+                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" 
+                                onclick="clearMedia('image')">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>`;
+            } else if (type === 'video') {
+                // Clear image input if exists
+                const imageInput = document.querySelector('input[name="image"]');
+                if (imageInput) imageInput.value = '';
+                
+                preview.innerHTML = `
+                    <div class="position-relative">
+                        <video src="${e.target.result}" class="w-100 rounded" controls style="max-height: 300px; background: #000;"></video>
+                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" 
+                                onclick="clearMedia('video')">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>`;
+            }
+        }
+        
+        reader.readAsDataURL(file);
+    }
+}
+
+function clearMedia(type) {
+    const input = document.querySelector(`input[name="${type}"]`);
+    if (input) input.value = '';
+    
+    const preview = document.getElementById('mediaPreview');
+    preview.innerHTML = '';
+    preview.style.display = 'none';
+}
+
+function requestAIHelp() {
+    const title = document.querySelector('input[name="title"]').value;
+    const content = document.querySelector('textarea[name="content"]').value;
+    
+    if (!title && !content) {
+        showToast('Please write something first!', 'warning');
+        return;
+    }
+    
+    // Mark as AI assisted
+    document.getElementById('aiAssisted').value = '1';
+    
+    // Placeholder for AI integration
+    showToast('AI assistance will help enhance your blog post with better grammar and structure!', 'info', 5000);
+}
+
+// Delete Confirmation
+let deleteFormId = null;
+
+function confirmDelete(blogId, blogTitle) {
+    deleteFormId = blogId;
+    document.getElementById('blogTitleToDelete').textContent = blogTitle;
+    
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    if (deleteFormId) {
+        document.getElementById('deleteBlogForm' + deleteFormId).submit();
+    }
+});
+
+// Custom Toast Notification System
+function showToast(message, type = 'success', duration = 3000) {
+    const iconMap = {
+        success: 'bi-check-circle-fill',
+        danger: 'bi-exclamation-circle-fill',
+        warning: 'bi-exclamation-triangle-fill',
+        info: 'bi-info-circle-fill'
+    };
+    
+    const bgMap = {
+        success: 'bg-success',
+        danger: 'bg-danger',
+        warning: 'bg-warning',
+        info: 'bg-success'
+    };
+    
+    const textColorMap = {
+        success: 'text-white',
+        danger: 'text-white',
+        warning: 'text-dark',
+        info: 'text-white'
+    };
+    
+    const toastHtml = `
+        <div class="toast custom-toast show" role="alert">
+            <div class="toast-header ${bgMap[type]} ${textColorMap[type]} border-0">
+                <i class="bi ${iconMap[type]} me-2"></i>
+                <strong class="me-auto">${type.charAt(0).toUpperCase() + type.slice(1)}</strong>
+                <button type="button" class="btn-close ${type === 'warning' ? '' : 'btn-close-white'}" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+    
+    const toastContainer = document.createElement('div');
+    toastContainer.innerHTML = toastHtml;
+    document.body.appendChild(toastContainer);
+    
+    const toastElement = toastContainer.querySelector('.toast');
+    
+    // Auto dismiss
+    setTimeout(() => {
+        toastElement.classList.add('toast-closing');
+        setTimeout(() => {
+            toastContainer.remove();
+        }, 300);
+    }, duration);
+    
+    // Manual dismiss
+    toastElement.querySelector('.btn-close').addEventListener('click', () => {
+        toastElement.classList.add('toast-closing');
+        setTimeout(() => {
+            toastContainer.remove();
+        }, 300);
+    });
+}
+
+// Show Laravel session messages as toasts
+@if(session('success'))
+    showToast("{{ session('success') }}", 'success');
+@endif
+
+@if(session('error'))
+    showToast("{{ session('error') }}", 'danger');
+@endif
+
+@if($errors->any())
+    @foreach($errors->all() as $error)
+        showToast("{{ $error }}", 'danger');
+    @endforeach
+@endif
+</script>
+@endpush
+@endsection

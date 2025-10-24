@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminVehiculeController;
 use App\Http\Controllers\Admin\AIController;
 use App\Http\Controllers\MetricsController;
+use App\Http\Controllers\BlogController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -66,6 +67,10 @@ Route::get('/events/{event}', [EventController::class, 'show'])->name('events.sh
 // Organizations
 Route::get('/organizations', [OrganizationController::class, 'index'])->name('organizations.index');
 Route::get('/organizations/{organization}', [OrganizationController::class, 'show'])->name('organizations.show');
+
+// Blogs (Public)
+Route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');
+Route::get('/blogs/{blog}', [BlogController::class, 'show'])->name('blogs.show');
 
 /*
 |--------------------------------------------------------------------------
@@ -127,6 +132,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/organization-request', [OrganizationRequestController::class, 'create'])->name('organization-request.create');
     Route::post('/organization-request', [OrganizationRequestController::class, 'store'])->name('organization-request.store');
     Route::get('/organization-requests', [OrganizationRequestController::class, 'index'])->name('organization-requests.index');
+    
+    // Blogs (Authenticated)
+    Route::get('/blogs/create', [BlogController::class, 'create'])->name('blogs.create');
+    Route::post('/blogs', [BlogController::class, 'store'])->name('blogs.store');
+    Route::get('/blogs/{blog}/edit', [BlogController::class, 'edit'])->name('blogs.edit');
+    Route::put('/blogs/{blog}', [BlogController::class, 'update'])->name('blogs.update');
+    Route::delete('/blogs/{blog}', [BlogController::class, 'destroy'])->name('blogs.destroy');
+    Route::post('/blogs/{blog}/like', [BlogController::class, 'toggleLike'])->name('blogs.like');
+    Route::post('/blogs/{blog}/comments', [BlogController::class, 'addComment'])->name('blogs.comments.store');
+    Route::delete('/blog-comments/{comment}', [BlogController::class, 'deleteComment'])->name('blogs.comments.destroy');
+    Route::get('/my-blogs', [BlogController::class, 'myBlogs'])->name('blogs.my');
 });
 
 /*
@@ -148,6 +164,12 @@ Route::middleware(['auth'])->prefix('organizer')->name('organizer.')->group(func
     
     // Events
     Route::resource('events', OrganizerEventController::class);
+    
+    // Blogs
+    Route::get('/blogs', [BlogController::class, 'organizerIndex'])->name('blogs.index');
+    Route::get('/blogs/create', [BlogController::class, 'organizerCreate'])->name('blogs.create');
+    Route::get('/blogs/{blog}', [BlogController::class, 'organizerShow'])->name('blogs.show');
+    Route::get('/blogs/{blog}/edit', [BlogController::class, 'organizerEdit'])->name('blogs.edit');
     
     // Community & Donations
     Route::get('/community', [OrganizerDashboardController::class, 'community'])->name('community');

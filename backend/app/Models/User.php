@@ -69,6 +69,21 @@ class User extends Authenticatable
         return $this->hasMany(OrganizationRequest::class);
     }
 
+    public function blogs()
+    {
+        return $this->hasMany(Blog::class);
+    }
+
+    public function blogComments()
+    {
+        return $this->hasMany(BlogComment::class);
+    }
+
+    public function likedBlogs()
+    {
+        return $this->belongsToMany(Blog::class, 'blog_likes')->withTimestamps();
+    }
+
     // Helper methods
     public function isAdmin()
     {
