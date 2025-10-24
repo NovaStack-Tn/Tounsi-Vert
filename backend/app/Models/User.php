@@ -26,6 +26,7 @@ class User extends Authenticatable
         'phone_number',
         'score',
         'role',
+        'name', // Virtual attribute (uses mutator to set first_name/last_name)
     ];
 
     protected $hidden = [
