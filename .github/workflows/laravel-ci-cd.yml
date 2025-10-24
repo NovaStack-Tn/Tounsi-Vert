@@ -31,7 +31,8 @@ jobs:
       # Step 1: Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
-
+        with:
+          fetch-depth: 0
       # Step 2: Setup PHP 8.1 with Xdebug coverage
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -118,7 +119,7 @@ jobs:
 
       # Step 11: Run SonarQube code quality scan
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@b4cb3c1e1c46c9a35b5eb3583f9b70d07e1c0e7f
+        uses: SonarSource/sonarcloud-github-action@v2.2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # needed for PR decoration
