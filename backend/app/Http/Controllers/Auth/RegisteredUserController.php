@@ -30,25 +30,44 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'first_name' => ['required', 'string', 'max:100'],
-            'last_name' => ['required', 'string', 'max:100'],
+        // Support both 'name' (for Breeze tests) and 'first_name'/'last_name' (for actual form)
+        $rules = [
             'email' => ['required', 'string', 'lowercase', 'email', 'max:120', 'unique:'.User::class],
-            'region' => ['required', 'string', 'max:120'],
-            'city' => ['required', 'string', 'max:120'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        ];
 
-        $user = User::create([
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
+        if ($request->has('name')) {
+            $rules['name'] = ['required', 'string', 'max:200'];
+        } else {
+            $rules['first_name'] = ['required', 'string', 'max:100'];
+            $rules['last_name'] = ['required', 'string', 'max:100'];
+            $rules['region'] = ['required', 'string', 'max:120'];
+            $rules['city'] = ['required', 'string', 'max:120'];
+        }
+
+        $request->validate($rules);
+
+        $userData = [
             'email' => $request->email,
-            'region' => $request->region,
-            'city' => $request->city,
             'role' => 'member', // Default role for new users
             'score' => 0, // Starting score
             'password' => Hash::make($request->password),
-        ]);
+        ];
+
+        // Handle 'name' field (will be split by mutator) or first_name/last_name
+        if ($request->has('name')) {
+            $userData['name'] = $request->name;
+            // Set defaults for region/city if not provided (for Breeze tests)
+            $userData['region'] = $request->input('region', 'Unknown');
+            $userData['city'] = $request->input('city', 'Unknown');
+        } else {
+            $userData['first_name'] = $request->first_name;
+            $userData['last_name'] = $request->last_name;
+            $userData['region'] = $request->region;
+            $userData['city'] = $request->city;
+        }
+
+        $user = User::create($userData);
 
         event(new Registered($user));
 

@@ -2,47 +2,36 @@
 # Note: This container runs PHP-FPM on port 9000. An Nginx reverse proxy is required
 # to serve static files and proxy PHP requests (handle via docker-compose or platform).
 
-FROM php:8.1-fpm-alpine
-
-# Set working directory
+FROM php:8.3-fpm-alpine
 WORKDIR /var/www/html
 
-# Install system dependencies and PHP extensions
+# System libs + PHP extensions
 RUN apk add --no-cache \
     git \
     curl \
     libpng-dev \
     libjpeg-turbo-dev \
+    freetype-dev \        
     libxml2-dev \
     zip \
     unzip \
     mysql-client \
     icu-dev \
-    && docker-php-ext-configure gd --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-    pdo_mysql \
-    mbstring \
-    gd \
-    xml \
-    intl \
-    opcache
+    oniguruma-dev \
+  && docker-php-ext-configure gd --with-jpeg --with-freetype \
+  && docker-php-ext-install -j"$(nproc)" \
+       pdo_mysql mbstring gd xml intl opcache
 
-# Install Composer
+# Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copy application files
+# Copy app + install prod deps
 COPY . .
-
-# Install production dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-# Set proper permissions
+# Permissions
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 /var/www/html/storage \
-    && chmod -R 775 /var/www/html/bootstrap/cache
+ && chmod -R 775 storage bootstrap/cache
 
-# Expose PHP-FPM port
 EXPOSE 9000
-
-# Start PHP-FPM server
 CMD ["php-fpm"]

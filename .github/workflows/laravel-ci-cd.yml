@@ -1,5 +1,9 @@
 name: Laravel CI/CD Pipeline
 
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
   push:
     branches:
@@ -27,12 +31,13 @@ jobs:
       # Step 1: Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
-
+        with:
+          fetch-depth: 0
       # Step 2: Setup PHP 8.1 with Xdebug coverage
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '8.3'
           extensions: mbstring, pdo_mysql, intl, gd, xml
           coverage: xdebug
 
@@ -101,7 +106,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install npm dependencies
         working-directory: backend
@@ -113,11 +118,13 @@ jobs:
 
 
       # Step 11: Run SonarQube code quality scan
-      - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@v2
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2.2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # needed for PR decoration
+        with:
+          projectBaseDir: .
 
       # Step 12: Build and push Docker image
       - name: Login to Docker Hub

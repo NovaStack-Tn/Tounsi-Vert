@@ -221,8 +221,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Reports
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/analytics', [AdminReportController::class, 'analytics'])->name('reports.analytics');
+    Route::get('/reports/advanced-analytics', [AdminReportController::class, 'advancedAnalytics'])->name('reports.advancedAnalytics');
     Route::get('/reports/search', [AdminReportController::class, 'search'])->name('reports.search');
+    
+    // Export routes
+    Route::get('/reports/export/csv', [AdminReportController::class, 'exportCSV'])->name('reports.exportCSV');
+    Route::get('/reports/export/excel', [AdminReportController::class, 'exportExcel'])->name('reports.exportExcel');
+    Route::get('/reports/export/pdf', [AdminReportController::class, 'exportPDF'])->name('reports.exportPDF');
+    Route::get('/reports/export/json', [AdminReportController::class, 'exportJSON'])->name('reports.exportJSON');
+    
     Route::get('/reports/{report}', [AdminReportController::class, 'show'])->name('reports.show');
+    Route::get('/reports/{report}/export-pdf', [AdminReportController::class, 'exportSinglePDF'])->name('reports.exportSinglePDF');
     Route::post('/reports/{report}/add-action', [AdminReportController::class, 'addAction'])->name('reports.addAction');
     Route::post('/reports/{report}/update-status', [AdminReportController::class, 'updateStatus'])->name('reports.updateStatus');
     Route::post('/reports/{report}/suspend-organization', [AdminReportController::class, 'suspendOrganization'])->name('reports.suspendOrganization');

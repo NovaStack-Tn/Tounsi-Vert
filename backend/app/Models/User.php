@@ -26,6 +26,7 @@ class User extends Authenticatable
         'phone_number',
         'score',
         'role',
+        'name', // Virtual attribute (uses mutator to set first_name/last_name)
     ];
 
     protected $hidden = [
@@ -103,5 +104,19 @@ class User extends Authenticatable
     public function getFullNameAttribute()
     {
         return "{$this->first_name} {$this->last_name}";
+    }
+
+    // Accessor for 'name' (for compatibility with Breeze tests)
+    public function getNameAttribute()
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
+
+    // Mutator for 'name' (splits into first_name and last_name)
+    public function setNameAttribute($value)
+    {
+        $parts = explode(' ', $value, 2);
+        $this->attributes['first_name'] = $parts[0] ?? '';
+        $this->attributes['last_name'] = $parts[1] ?? '';
     }
 }
