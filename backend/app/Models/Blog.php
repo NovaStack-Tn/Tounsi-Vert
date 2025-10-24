@@ -73,6 +73,14 @@ class Blog extends Model
     }
 
     /**
+     * Alias for likedBy() - for admin controller compatibility.
+     */
+    public function likes(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'blog_likes')->withTimestamps();
+    }
+
+    /**
      * Check if a user has liked this blog.
      */
     public function isLikedBy(?User $user = null): bool

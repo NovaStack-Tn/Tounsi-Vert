@@ -19,6 +19,16 @@ class BlogComment extends Model
         'parent_id',
     ];
 
+    protected $appends = ['content'];
+
+    /**
+     * Get content attribute (alias for comment field).
+     */
+    public function getContentAttribute(): string
+    {
+        return $this->comment;
+    }
+
     /**
      * Get the blog that owns the comment.
      */

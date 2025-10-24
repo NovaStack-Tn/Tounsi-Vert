@@ -76,13 +76,17 @@
                         <!-- Media Preview -->
                         <div id="mediaPreview" class="mb-4" style="display: none;"></div>
 
-                        <!-- AI Loading Indicator -->
-                        <div id="aiLoadingIndicator" class="alert alert-info mb-4" style="display: none;">
-                            <div class="d-flex align-items-center">
-                                <div class="spinner-border spinner-border-sm me-3" role="status"></div>
-                                <div>
-                                    <strong>🤖 AI is working...</strong>
-                                    <div id="aiLoadingText" class="small">Processing your request...</div>
+                        <!-- AI Loading Overlay -->
+                        <div id="aiLoadingOverlay" class="ai-loading-overlay" style="display: none;">
+                            <div class="ai-loading-content">
+                                <div class="spinner-container">
+                                    <div class="ai-spinner"></div>
+                                </div>
+                                <h4 class="mt-4 mb-2">🤖 AI is working its magic...</h4>
+                                <p id="aiLoadingText" class="text-muted">Processing your request...</p>
+                                <div class="progress mt-3" style="height: 4px; width: 300px;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" 
+                                         role="progressbar" style="width: 100%"></div>
                                 </div>
                             </div>
                         </div>
@@ -133,13 +137,133 @@
 </div>
 
 @push('scripts')
+<style>
+    /* AI Loading Overlay */
+    .ai-loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .ai-loading-content {
+        text-align: center;
+        color: white;
+    }
+
+    .spinner-container {
+        display: inline-block;
+    }
+
+    .ai-spinner {
+        width: 80px;
+        height: 80px;
+        border: 8px solid rgba(255, 255, 255, 0.1);
+        border-top-color: #ffc107;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Toast Notifications */
+    .toast-container-custom {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+    }
+
+    .toast-custom {
+        min-width: 350px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        margin-bottom: 15px;
+        animation: slideInRight 0.3s ease;
+        overflow: hidden;
+    }
+
+    .toast-custom.success { border-left: 4px solid #52b788; }
+    .toast-custom.error { border-left: 4px solid #dc3545; }
+    .toast-custom.warning { border-left: 4px solid #ffc107; }
+    .toast-custom.info { border-left: 4px solid #0dcaf0; }
+
+    .toast-header-custom {
+        padding: 12px 15px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .toast-body-custom {
+        padding: 15px;
+    }
+
+    .toast-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+    }
+
+    .toast-icon.success { background: #d1f4e0; color: #52b788; }
+    .toast-icon.error { background: #f8d7da; color: #dc3545; }
+    .toast-icon.warning { background: #fff3cd; color: #ffc107; }
+    .toast-icon.info { background: #cff4fc; color: #0dcaf0; }
+
+    @keyframes slideInRight {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideOutRight {
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+
+    .toast-closing {
+        animation: slideOutRight 0.3s ease;
+    }
+</style>
+
+<!-- Toast Container -->
+<div class="toast-container-custom" id="toastContainer"></div>
+
 <script>
 function previewImages(input) {
     const preview = document.getElementById('mediaPreview');
     
     if (input.files && input.files.length > 0) {
         if (input.files.length > 5) {
-            alert('Maximum 5 images allowed!');
+            showToast('Maximum 5 images allowed!', 'warning');
             input.value = '';
             return;
         }
@@ -218,6 +342,48 @@ function clearVideo() {
     if (videoContainer) videoContainer.remove();
 }
 
+// Toast Notification System
+function showToast(message, type = 'info', duration = 5000) {
+    const icons = {
+        success: '✓',
+        error: '✕',
+        warning: '⚠',
+        info: 'ℹ'
+    };
+
+    const titles = {
+        success: 'Success',
+        error: 'Error',
+        warning: 'Warning',
+        info: 'Info'
+    };
+
+    const toastHtml = `
+        <div class="toast-custom ${type}">
+            <div class="toast-header-custom">
+                <div class="d-flex align-items-center">
+                    <div class="toast-icon ${type}">${icons[type]}</div>
+                    <strong>${titles[type]}</strong>
+                </div>
+                <button type="button" class="btn-close btn-sm" onclick="this.closest('.toast-custom').remove()"></button>
+            </div>
+            <div class="toast-body-custom">${message}</div>
+        </div>`;
+
+    const container = document.getElementById('toastContainer');
+    const toastElement = document.createElement('div');
+    toastElement.innerHTML = toastHtml;
+    container.appendChild(toastElement.firstElementChild);
+
+    setTimeout(() => {
+        const toast = container.lastElementChild;
+        if (toast) {
+            toast.classList.add('toast-closing');
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, duration);
+}
+
 // Show AI Image Upload Modal
 function showAIImageUploadModal() {
     const modalHtml = `
@@ -253,7 +419,7 @@ function generateFromOrgImage(input) {
     const formData = new FormData();
     formData.append('image', input.files[0]);
 
-    showAILoading('Analyzing image and generating content...');
+    showAILoading('🔍 Analyzing image and generating content...');
 
     fetch('{{ route("blogs.ai.generateFromImage") }}', {
         method: 'POST',
@@ -278,14 +444,14 @@ function generateFromOrgImage(input) {
             }
             
             bootstrap.Modal.getInstance(document.getElementById('aiImageModal')).hide();
-            alert(data.message);
+            showToast(data.message || 'Content generated successfully!', 'success');
         } else {
-            alert(data.message || 'Failed to generate content');
+            showToast(data.message || 'Failed to generate content', 'error');
         }
     })
     .catch(error => {
         hideAILoading();
-        alert('Error: ' + error.message);
+        showToast('Error: ' + error.message, 'error');
     });
 }
 
@@ -295,11 +461,11 @@ function enhanceOrgContent() {
     const content = document.getElementById('content').value.trim();
 
     if (!title && !content) {
-        alert('Please write something first!');
+        showToast('Please write something first!', 'warning');
         return;
     }
 
-    showAILoading('Enhancing your content with AI...');
+    showAILoading('✨ Enhancing your content with AI...');
 
     fetch('{{ route("blogs.ai.enhanceContent") }}', {
         method: 'POST',
@@ -316,14 +482,14 @@ function enhanceOrgContent() {
             document.getElementById('title').value = data.title;
             document.getElementById('content').value = data.content;
             document.getElementById('aiAssisted').value = '1';
-            alert(data.message);
+            showToast(data.message || 'Content enhanced successfully!', 'success');
         } else {
-            alert(data.message || 'Failed to enhance content');
+            showToast(data.message || 'Failed to enhance content', 'error');
         }
     })
     .catch(error => {
         hideAILoading();
-        alert('Error: ' + error.message);
+        showToast('Error: ' + error.message, 'error');
     });
 }
 
@@ -332,11 +498,11 @@ function generateOrgBanner() {
     const title = document.getElementById('title').value.trim();
 
     if (!title) {
-        alert('Please enter a title first!');
+        showToast('Please enter a title first!', 'warning');
         return;
     }
 
-    showAILoading('Generating banner image with DALL-E...');
+    showAILoading('🎨 Generating banner image with DALL-E...');
 
     fetch('{{ route("blogs.ai.generateBanner") }}', {
         method: 'POST',
@@ -361,25 +527,25 @@ function generateOrgBanner() {
             preview.style.display = 'block';
             
             document.getElementById('aiAssisted').value = '1';
-            alert(data.message);
+            showToast(data.message || 'Banner generated successfully!', 'success');
         } else {
-            alert(data.message || 'Failed to generate banner');
+            showToast(data.message || 'Failed to generate banner', 'error');
         }
     })
     .catch(error => {
         hideAILoading();
-        alert('Error: ' + error.message);
+        showToast('Error: ' + error.message, 'error');
     });
 }
 
-// Show/Hide AI loading
+// Show/Hide AI loading overlay
 function showAILoading(message) {
     document.getElementById('aiLoadingText').textContent = message;
-    document.getElementById('aiLoadingIndicator').style.display = 'block';
+    document.getElementById('aiLoadingOverlay').style.display = 'flex';
 }
 
 function hideAILoading() {
-    document.getElementById('aiLoadingIndicator').style.display = 'none';
+    document.getElementById('aiLoadingOverlay').style.display = 'none';
 }
 </script>
 @endpush

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Blog;
-use App\Models\Comment;
+use App\Models\BlogComment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -82,8 +82,8 @@ class AdminBlogController extends Controller
         // Statistics
         $stats = [
             'total_blogs' => Blog::count(),
-            'total_comments' => Comment::whereNotNull('blog_id')->count(),
-            'total_likes' => \DB::table('likes')->where('likeable_type', 'App\Models\Blog')->count(),
+            'total_comments' => BlogComment::count(),
+            'total_likes' => \DB::table('blog_likes')->count(),
             'ai_assisted_blogs' => Blog::where('ai_assisted', true)->count(),
             'blogs_with_images' => Blog::where('has_images', true)->count(),
             'blogs_with_videos' => Blog::where('has_video', true)->count(),
@@ -167,16 +167,9 @@ class AdminBlogController extends Controller
     /**
      * Delete a comment
      */
-    public function destroyComment(Comment $comment)
+    public function destroyComment(BlogComment $comment)
     {
         try {
-            if ($comment->blog_id === null) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'This is not a blog comment'
-                ], 400);
-            }
-
             $comment->delete();
 
             return response()->json([
@@ -202,14 +195,14 @@ class AdminBlogController extends Controller
             'blogs_today' => Blog::whereDate('created_at', today())->count(),
             'blogs_this_week' => Blog::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
             'blogs_this_month' => Blog::whereMonth('created_at', now()->month)->count(),
-            'total_comments' => Comment::whereNotNull('blog_id')->count(),
-            'total_likes' => \DB::table('likes')->where('likeable_type', 'App\Models\Blog')->count(),
+            'total_comments' => BlogComment::count(),
+            'total_likes' => \DB::table('blog_likes')->count(),
             'ai_assisted' => Blog::where('ai_assisted', true)->count(),
             'with_images' => Blog::where('has_images', true)->count(),
             'with_videos' => Blog::where('has_video', true)->count(),
             'total_views' => Blog::sum('views_count'),
-            'avg_comments_per_blog' => round(Comment::whereNotNull('blog_id')->count() / max(Blog::count(), 1), 2),
-            'avg_likes_per_blog' => round(\DB::table('likes')->where('likeable_type', 'App\Models\Blog')->count() / max(Blog::count(), 1), 2),
+            'avg_comments_per_blog' => round(BlogComment::count() / max(Blog::count(), 1), 2),
+            'avg_likes_per_blog' => round(\DB::table('blog_likes')->count() / max(Blog::count(), 1), 2),
         ];
 
         return response()->json($stats);

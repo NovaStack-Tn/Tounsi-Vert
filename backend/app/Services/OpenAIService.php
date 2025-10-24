@@ -21,13 +21,47 @@ class OpenAIService
     public function generateFromImage(string $imagePath): array
     {
         try {
-            $imageUrl = Storage::url($imagePath);
-            $fullImageUrl = url($imageUrl);
+            // Check if API key is set
+            if (!$this->apiKey) {
+                \Log::error('OpenAI API key not configured');
+                return [
+                    'title' => '',
+                    'content' => '',
+                    'error' => 'OpenAI API key not configured. Please add OPENAI_API_KEY to your .env file.'
+                ];
+            }
+
+            // Get the full path to the image
+            $fullPath = Storage::disk('public')->path($imagePath);
+            
+            // Check if file exists
+            if (!file_exists($fullPath)) {
+                \Log::error('Image file not found: ' . $fullPath);
+                return [
+                    'title' => '',
+                    'content' => '',
+                    'error' => 'Image file not found'
+                ];
+            }
+
+            // Read image and convert to base64
+            $imageData = file_get_contents($fullPath);
+            $base64Image = base64_encode($imageData);
+            
+            // Detect mime type
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_file($finfo, $fullPath);
+            finfo_close($finfo);
+
+            \Log::info('Sending image to OpenAI Vision API', [
+                'mime_type' => $mimeType,
+                'image_size' => strlen($imageData)
+            ]);
 
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
-            ])->timeout(60)->post($this->baseUrl . '/chat/completions', [
+            ])->timeout(90)->post($this->baseUrl . '/chat/completions', [
                 'model' => 'gpt-4o',
                 'messages' => [
                     [
@@ -39,12 +73,12 @@ class OpenAIService
                         'content' => [
                             [
                                 'type' => 'text',
-                                'text' => 'Analyze this image and create a blog post about it. Return a JSON with "title" and "content" fields. The title should be catchy and under 100 characters. The content should be 200-500 words, engaging, and related to environmental topics in Tunisia. Write in a friendly, informative tone.'
+                                'text' => 'Analyze this image and create a blog post about it. Return ONLY a JSON object with "title" and "content" fields. The title should be catchy and under 100 characters. The content should be 200-500 words, engaging, and related to environmental topics. Write in a friendly, informative tone. Return ONLY the JSON, no other text.'
                             ],
                             [
                                 'type' => 'image_url',
                                 'image_url' => [
-                                    'url' => $fullImageUrl
+                                    'url' => "data:{$mimeType};base64,{$base64Image}"
                                 ]
                             ]
                         ]
@@ -54,34 +88,61 @@ class OpenAIService
                 'temperature' => 0.7,
             ]);
 
+            \Log::info('OpenAI Response Status: ' . $response->status());
+
             if ($response->successful()) {
-                $content = $response->json()['choices'][0]['message']['content'] ?? '';
+                $responseData = $response->json();
+                $content = $responseData['choices'][0]['message']['content'] ?? '';
+                
+                \Log::info('OpenAI Response Content', ['content' => substr($content, 0, 200)]);
                 
                 // Try to parse JSON from the response
                 $jsonContent = $this->extractJson($content);
                 
-                if ($jsonContent) {
+                if ($jsonContent && isset($jsonContent['title']) && isset($jsonContent['content'])) {
                     return [
-                        'title' => $jsonContent['title'] ?? 'Environmental Awareness',
-                        'content' => $jsonContent['content'] ?? $content,
+                        'title' => $jsonContent['title'],
+                        'content' => $jsonContent['content'],
                     ];
                 }
                 
                 // Fallback: split content into title and body
-                return $this->splitContent($content);
+                $splitContent = $this->splitContent($content);
+                
+                if (!empty($splitContent['title']) && !empty($splitContent['content'])) {
+                    return $splitContent;
+                }
+                
+                // If still no content, return error
+                return [
+                    'title' => '',
+                    'content' => '',
+                    'error' => 'Could not parse AI response. Raw content: ' . substr($content, 0, 100)
+                ];
             }
+
+            $errorBody = $response->body();
+            \Log::error('OpenAI API Error', [
+                'status' => $response->status(),
+                'body' => $errorBody
+            ]);
 
             return [
                 'title' => '',
                 'content' => '',
-                'error' => 'Failed to generate content from image'
+                'error' => 'OpenAI API Error: ' . $response->status() . ' - ' . substr($errorBody, 0, 200)
             ];
 
         } catch (\Exception $e) {
+            \Log::error('Exception in generateFromImage', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return [
                 'title' => '',
                 'content' => '',
-                'error' => $e->getMessage()
+                'error' => 'Exception: ' . $e->getMessage()
             ];
         }
     }
@@ -199,18 +260,35 @@ class OpenAIService
      */
     private function extractJson(string $content): ?array
     {
-        // Try to find JSON in the response
-        if (preg_match('/\{.*\}/s', $content, $matches)) {
+        // Remove markdown code blocks if present
+        $content = preg_replace('/```json\s*/', '', $content);
+        $content = preg_replace('/```\s*/', '', $content);
+        $content = trim($content);
+        
+        // Try direct JSON decode first
+        try {
+            $json = json_decode($content, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($json)) {
+                return $json;
+            }
+        } catch (\Exception $e) {
+            // Continue to regex approach
+        }
+        
+        // Try to find JSON in the response using regex
+        if (preg_match('/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/s', $content, $matches)) {
             try {
                 $json = json_decode($matches[0], true);
-                if (json_last_error() === JSON_ERROR_NONE) {
+                if (json_last_error() === JSON_ERROR_NONE && is_array($json)) {
+                    \Log::info('Extracted JSON from response', ['json' => $json]);
                     return $json;
                 }
             } catch (\Exception $e) {
-                // Continue to fallback
+                \Log::error('Failed to decode extracted JSON', ['error' => $e->getMessage()]);
             }
         }
         
+        \Log::warning('Could not extract JSON from content', ['content' => substr($content, 0, 200)]);
         return null;
     }
 
@@ -219,13 +297,30 @@ class OpenAIService
      */
     private function splitContent(string $content): array
     {
-        $lines = explode("\n", trim($content));
+        $lines = array_filter(explode("\n", trim($content)), fn($line) => !empty(trim($line)));
+        $lines = array_values($lines); // Re-index array
+        
         $title = $lines[0] ?? 'Environmental Awareness';
         $body = implode("\n", array_slice($lines, 1));
         
-        // Clean title
-        $title = preg_replace('/^(Title:|#)\s*/i', '', $title);
-        $title = trim($title, ' ":');
+        // Clean title - remove common prefixes
+        $title = preg_replace('/^(Title:|#|##|###|\*\*Title\*\*:?)\s*/i', '', $title);
+        $title = trim($title, ' ":\*');
+        
+        // If title is still empty, use default
+        if (empty($title)) {
+            $title = 'Environmental Awareness';
+        }
+        
+        // If body is empty but we have content, use all content as body
+        if (empty($body) && !empty($content)) {
+            $body = $content;
+        }
+        
+        \Log::info('Split content into title and body', [
+            'title' => $title,
+            'content_length' => strlen($body)
+        ]);
         
         return [
             'title' => substr($title, 0, 200),
