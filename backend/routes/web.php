@@ -223,7 +223,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/reports/analytics', [AdminReportController::class, 'analytics'])->name('reports.analytics');
     Route::get('/reports/advanced-analytics', [AdminReportController::class, 'advancedAnalytics'])->name('reports.advancedAnalytics');
     Route::get('/reports/search', [AdminReportController::class, 'search'])->name('reports.search');
-    
+    Route::get('/reports/export', [AdminReportController::class, 'export'])->name('reports.export');
+
     // Export routes
     Route::get('/reports/export/csv', [AdminReportController::class, 'exportCSV'])->name('reports.exportCSV');
     Route::get('/reports/export/excel', [AdminReportController::class, 'exportExcel'])->name('reports.exportExcel');
