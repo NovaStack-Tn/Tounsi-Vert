@@ -43,15 +43,15 @@
             <!-- Filters & Sort -->
             <div class="card shadow-sm mb-4" style="border-radius: 15px; border: none;">
                 <div class="card-body p-3">
-                    <form method="GET" action="{{ route('blogs.index') }}" class="row g-2">
-                        <div class="col-md-6">
+                    <form method="GET" action="{{ route('blogs.index') }}" id="filterForm" class="row g-2 align-items-center">
+                        <div class="col-md-5">
                             <input type="text" 
                                    name="search" 
                                    class="form-control" 
                                    placeholder="Search blogs..." 
                                    value="{{ request('search') }}">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <select name="sort" class="form-select" onchange="this.form.submit()">
                                 <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Latest</option>
                                 <option value="popular" {{ request('sort') == 'popular' ? 'selected' : '' }}>Popular</option>
@@ -60,12 +60,38 @@
                                 <option value="most_commented" {{ request('sort') == 'most_commented' ? 'selected' : '' }}>Most Commented</option>
                             </select>
                         </div>
+                        @auth
+                        <div class="col-md-2">
+                            @if(request('my_blogs'))
+                                <a href="{{ route('blogs.index', array_merge(request()->except('my_blogs'), ['search' => request('search'), 'sort' => request('sort')])) }}" 
+                                   class="btn btn-primary w-100">
+                                    <i class="bi bi-grid me-1"></i>All Blogs
+                                </a>
+                            @else
+                                <a href="{{ route('blogs.index', array_merge(request()->all(), ['my_blogs' => '1'])) }}" 
+                                   class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-person-circle me-1"></i>My Blogs
+                                </a>
+                            @endif
+                        </div>
+                        @endauth
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-success w-100">
                                 <i class="bi bi-search"></i>
                             </button>
                         </div>
                     </form>
+                    
+                    @if(request('my_blogs'))
+                    <div class="mt-3">
+                        <div class="alert alert-info mb-0 py-2 d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-funnel-fill me-2"></i>Showing only your blogs</span>
+                            <a href="{{ route('blogs.index', request()->except('my_blogs')) }}" class="btn btn-sm btn-outline-primary">
+                                Clear Filter
+                            </a>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
 
@@ -91,21 +117,17 @@
                                 </small>
                             </div>
                             @auth
-                                @if(auth()->id() === $blog->user_id || auth()->user()->isAdmin())
+                                @if(auth()->id() === $blog->user_id)
                                 <div class="dropdown" onclick="event.stopPropagation();">
                                     <button class="btn btn-link text-muted" data-bs-toggle="dropdown">
                                         <i class="bi bi-three-dots"></i>
                                     </button>
                                     <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="{{ route('blogs.edit', $blog) }}">
-                                            <i class="bi bi-pencil me-2"></i>Edit
-                                        </a></li>
-                                        <li><hr class="dropdown-divider"></li>
                                         <li>
                                             <form action="{{ route('blogs.destroy', $blog) }}" method="POST" id="deleteBlogForm{{ $blog->id }}">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button" class="dropdown-item text-danger" onclick="confirmDelete({{ $blog->id }}, '{{ $blog->title }}')">
+                                                <button type="button" class="dropdown-item text-danger" onclick="confirmDelete({{ $blog->id }}, '{{ addslashes($blog->title) }}')">
                                                     <i class="bi bi-trash me-2"></i>Delete
                                                 </button>
                                             </form>
@@ -224,14 +246,22 @@
             @empty
             <div class="card shadow-sm" style="border-radius: 15px;">
                 <div class="card-body text-center py-5">
-                    <i class="bi bi-newspaper text-muted" style="font-size: 4rem;"></i>
-                    <h4 class="mt-3">No blogs yet</h4>
-                    <p class="text-muted">Be the first to share your story!</p>
-                    @auth
-                    <a href="#" class="btn btn-success rounded-pill" onclick="document.querySelector('input[name=title]').focus(); return false;">
-                        <i class="bi bi-plus-circle me-2"></i>Create Blog
-                    </a>
-                    @endauth
+                    <i class="bi {{ request('my_blogs') ? 'bi-person-x' : 'bi-newspaper' }} text-muted" style="font-size: 4rem;"></i>
+                    @if(request('my_blogs'))
+                        <h4 class="mt-3">You haven't created any blogs yet</h4>
+                        <p class="text-muted">Share your environmental story with the community!</p>
+                        @auth
+                        <a href="#" class="btn btn-success rounded-pill" onclick="document.querySelector('input[name=title]').focus(); return false;">
+                            <i class="bi bi-plus-circle me-2"></i>Create Your First Blog
+                        </a>
+                        @endauth
+                    @else
+                        <h4 class="mt-3">No blogs found</h4>
+                        <p class="text-muted">Try adjusting your search filters</p>
+                        <a href="{{ route('blogs.index') }}" class="btn btn-outline-primary rounded-pill">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Clear Filters
+                        </a>
+                    @endif
                 </div>
             </div>
             @endforelse

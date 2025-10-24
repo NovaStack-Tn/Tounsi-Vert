@@ -18,6 +18,11 @@ class BlogController extends Controller
     {
         $query = Blog::with(['user'])->published();
 
+        // My Blogs filter
+        if ($request->filled('my_blogs') && $request->my_blogs == '1' && auth()->check()) {
+            $query->where('user_id', auth()->id());
+        }
+
         // Search filter
         if ($request->filled('search')) {
             $query->search($request->search);
@@ -42,7 +47,7 @@ class BlogController extends Controller
                 $query->latest();
         }
 
-        $blogs = $query->paginate(10);
+        $blogs = $query->paginate(10)->withQueryString();
 
         // Get top organizations for sidebar ads (based on score)
         $topOrganizations = Organization::where('is_verified', true)
