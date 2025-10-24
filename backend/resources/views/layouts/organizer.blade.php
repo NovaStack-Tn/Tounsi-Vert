@@ -152,6 +152,12 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('organizer.blogs.index') }}" class="{{ request()->routeIs('organizer.blogs.*') ? 'active' : '' }} {{ $isBlocked ? 'disabled' : '' }}" {!! $isBlocked ? 'onclick="return false;" style="opacity: 0.5; cursor: not-allowed;"' : '' !!}>
+                        <i class="bi bi-newspaper"></i>
+                        <span>My Blogs</span>
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('organizer.community') }}" class="{{ request()->routeIs('organizer.community') ? 'active' : '' }} {{ $isBlocked ? 'disabled' : '' }}" {!! $isBlocked ? 'onclick="return false;" style="opacity: 0.5; cursor: not-allowed;"' : '' !!}>
                         <i class="bi bi-people-fill"></i>
                         <span>Community</span>

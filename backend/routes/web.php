@@ -26,8 +26,11 @@ use App\Http\Controllers\Admin\AdminOrgCategoryController;
 use App\Http\Controllers\Admin\AdminEventCategoryController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminVehiculeController;
+use App\Http\Controllers\Admin\AdminBlogController;
 use App\Http\Controllers\Admin\AIController;
 use App\Http\Controllers\MetricsController;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\BlogAIController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -66,6 +69,10 @@ Route::get('/events/{event}', [EventController::class, 'show'])->name('events.sh
 // Organizations
 Route::get('/organizations', [OrganizationController::class, 'index'])->name('organizations.index');
 Route::get('/organizations/{organization}', [OrganizationController::class, 'show'])->name('organizations.show');
+
+// Blogs (Public)
+Route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');
+Route::get('/blogs/{blog}', [BlogController::class, 'show'])->name('blogs.show');
 
 /*
 |--------------------------------------------------------------------------
@@ -127,12 +134,32 @@ Route::middleware('auth')->group(function () {
     Route::get('/organization-request', [OrganizationRequestController::class, 'create'])->name('organization-request.create');
     Route::post('/organization-request', [OrganizationRequestController::class, 'store'])->name('organization-request.store');
     Route::get('/organization-requests', [OrganizationRequestController::class, 'index'])->name('organization-requests.index');
+    
+    // Blogs (Authenticated)
+    Route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');
+    Route::get('/blogs/{blog}', [BlogController::class, 'show'])->name('blogs.show');
+
+    Route::post('/blogs', [BlogController::class, 'store'])->name('blogs.store');
+    Route::put('/blogs/{blog}', [BlogController::class, 'update'])->name('blogs.update');
+    Route::delete('/blogs/{blog}', [BlogController::class, 'destroy'])->name('blogs.destroy');
+    
+    // Blog interactions
+    Route::post('/blogs/{blog}/like', [BlogController::class, 'toggleLike'])->name('blogs.like');
+    Route::post('/blogs/{blog}/comments', [BlogController::class, 'storeComment'])->name('blogs.comments.store');
+    Route::delete('/blogs/comments/{comment}', [BlogController::class, 'deleteComment'])->name('blogs.comments.destroy');
+    
+    // AI Blog Generation
+    Route::post('/blogs/ai/generate-from-image', [BlogAIController::class, 'generateFromImage'])->name('blogs.ai.generateFromImage');
+    Route::post('/blogs/ai/enhance-content', [BlogAIController::class, 'enhanceContent'])->name('blogs.ai.enhanceContent');
+    Route::post('/blogs/ai/generate-banner', [BlogAIController::class, 'generateBannerImage'])->name('blogs.ai.generateBanner');
+    
+    Route::get('/my-blogs', [BlogController::class, 'myBlogs'])->name('blogs.my');
 });
 
 /*
 |--------------------------------------------------------------------------
 | Organizer Routes
-|--------------------------------------------------------------------------
+{{ ... }}
 */
 
 Route::middleware(['auth'])->prefix('organizer')->name('organizer.')->group(function () {
@@ -148,6 +175,12 @@ Route::middleware(['auth'])->prefix('organizer')->name('organizer.')->group(func
     
     // Events
     Route::resource('events', OrganizerEventController::class);
+    
+    // Blogs
+    Route::get('/blogs', [BlogController::class, 'organizerIndex'])->name('blogs.index');
+    Route::get('/blogs/create', [BlogController::class, 'organizerCreate'])->name('blogs.create');
+    Route::get('/blogs/{blog}', [BlogController::class, 'organizerShow'])->name('blogs.show');
+    Route::get('/blogs/{blog}/edit', [BlogController::class, 'organizerEdit'])->name('blogs.edit');
     
     // Community & Donations
     Route::get('/community', [OrganizerDashboardController::class, 'community'])->name('community');
@@ -235,6 +268,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/ai/anomalies', [AIController::class, 'organizationsWithAnomalies'])->name('ai.anomalies');
     Route::get('/ai/organization/{organization}', [AIController::class, 'analyzeOrganization'])->name('ai.organization');
     Route::get('/ai/event/{event}/predict', [AIController::class, 'predictEvent'])->name('ai.predict-event');
+
+    // Blogs Management
+    Route::get('/blogs', [AdminBlogController::class, 'index'])->name('blogs.index');
+    Route::get('/blogs/stats', [AdminBlogController::class, 'stats'])->name('blogs.stats');
+    Route::get('/blogs/{blog}', [AdminBlogController::class, 'show'])->name('blogs.show');
+    Route::delete('/blogs/{blog}', [AdminBlogController::class, 'destroy'])->name('blogs.destroy');
+    Route::delete('/blog-comments/{comment}', [AdminBlogController::class, 'destroyComment'])->name('blog-comments.destroy');
 
 });
 

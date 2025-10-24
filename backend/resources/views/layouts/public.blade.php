@@ -133,17 +133,30 @@
     </a>
 </li>
 
-                   
-                    <li class="nav-item">
-                        <a class="nav-link px-3 {{ request()->routeIs('leaderboard') ? 'active fw-bold' : '' }}" href="{{ route('leaderboard') }}">
-                            <i class="bi bi-trophy-fill me-1"></i>Leaderboard
+                    <!-- Community Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle px-3 {{ request()->routeIs('blogs.*') || request()->routeIs('leaderboard') || request()->routeIs('about') ? 'active fw-bold' : '' }}" 
+                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-people-fill me-1"></i>Community
                         </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item {{ request()->routeIs('blogs.*') ? 'active' : '' }}" href="{{ route('blogs.index') }}">
+                                    <i class="bi bi-newspaper me-2"></i>Blogs
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item {{ request()->routeIs('leaderboard') ? 'active' : '' }}" href="{{ route('leaderboard') }}">
+                                    <i class="bi bi-trophy-fill me-2"></i>Leaderboard
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item {{ request()->routeIs('about') ? 'active' : '' }}" href="{{ route('about') }}">
+                                    <i class="bi bi-info-circle me-2"></i>About
+                                </a>
+                            </li>
+                        </ul>
                     </li>
-               
-                    <li class="nav-item">
-                        <a class="nav-link px-3 {{ request()->routeIs('about') ? 'active fw-bold' : '' }}" href="{{ route('about') }}">
-                            <i class="bi bi-info-circle me-1"></i>About
-                        </a>
                 </ul>
                 <ul class="navbar-nav">
                     @auth
