@@ -11,9 +11,6 @@
 
         </div>
         <div>
-            <a href="{{ route('admin.ai.anomalies') }}" class="btn btn-warning me-2">
-                <i class="bi bi-exclamation-triangle me-1"></i>Anomalies
-            </a>
             <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i>Retour
             </a>
@@ -45,40 +42,6 @@ GEMINI_MODEL=gemini-pro</code></pre>
                         <i class="bi bi-book me-1"></i>
                         <strong>Full Documentation:</strong> See <code>GEMINI_QUICK_START.md</code> in the project root.
                     </p>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    <!-- AI Status Test Card -->
-    @if(!empty(config('services.gemini.api_key')))
-        <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-            <div class="card-body text-white">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h5 class="mb-2">
-                            <i class="bi bi-robot me-2"></i>
-                            Gemini AI Status
-                        </h5>
-                        <p class="mb-1">
-                            <i class="bi bi-check-circle-fill me-2"></i>
-                            API Key: Configured
-                        </p>
-                        <p class="mb-1">
-                            <i class="bi bi-check-circle-fill me-2"></i>
-                            Model: {{ config('services.gemini.model', 'gemini-pro') }}
-                        </p>
-                        <p class="mb-0">
-                            <i class="bi bi-check-circle-fill me-2"></i>
-                            AI Insights: {{ isset($insights['ai_insights']) && !empty($insights['ai_insights']) ? 'Active' : 'Fallback Mode' }}
-                        </p>
-                    </div>
-                    <div class="col-md-4 text-center">
-                        <div class="display-1">
-                            <i class="bi bi-stars"></i>
-                        </div>
-                        <p class="mb-0 small">Powered by Google Gemini</p>
-                    </div>
                 </div>
             </div>
         </div>
