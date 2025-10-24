@@ -602,7 +602,9 @@
         animation: slideOutRight 0.3s ease;
     }
 </style>
+@endpush
 
+@push('scripts')
 <script>
 // Toast Notification System
 function showToast(message, type = 'info', duration = 5000) {
@@ -734,20 +736,148 @@ function clearVideo() {
     if (videoContainer) videoContainer.remove();
 }
 
-function requestAIHelp() {
-    const title = document.querySelector('input[name="title"]').value;
-    const content = document.querySelector('textarea[name="content"]').value;
-    
+// Show AI Image Upload Modal
+function showWebAIImageUpload() {
+    const modal = new bootstrap.Modal(document.getElementById('webAiImageModal'));
+    modal.show();
+}
+
+// Generate from image
+function generateWebFromImage(input) {
+    if (!input.files || !input.files[0]) return;
+
+    const formData = new FormData();
+    formData.append('image', input.files[0]);
+
+    showAILoading('🔍 Analyzing image and generating content...');
+
+    fetch('{{ route("blogs.ai.generateFromImage") }}', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideAILoading();
+        if (data.success) {
+            document.querySelector('input[name="title"]').value = data.title;
+            document.querySelector('textarea[name="content"]').value = data.content;
+            document.getElementById('aiAssisted').value = '1';
+            
+            if (data.image_path) {
+                const container = document.getElementById('aiGeneratedImageContainer');
+                container.innerHTML = `<input type="hidden" name="ai_generated_image" value="${data.image_path}">`;
+                
+                const preview = document.getElementById('mediaPreview');
+                preview.innerHTML = `<div class="alert alert-warning">
+                    <i class="bi bi-magic me-2"></i>AI Generated Image Added
+                </div>`;
+                preview.style.display = 'block';
+            }
+            
+            bootstrap.Modal.getInstance(document.getElementById('webAiImageModal')).hide();
+            showToast(data.message || 'Content generated successfully!', 'success');
+        } else {
+            showToast(data.message || 'Failed to generate content', 'error');
+        }
+    })
+    .catch(error => {
+        hideAILoading();
+        showToast('Error: ' + error.message, 'error');
+    });
+}
+
+// Enhance content
+function enhanceWebContent() {
+    const title = document.querySelector('input[name="title"]').value.trim();
+    const content = document.querySelector('textarea[name="content"]').value.trim();
+
     if (!title && !content) {
         showToast('Please write something first!', 'warning');
         return;
     }
-    
-    // Mark as AI assisted
-    document.getElementById('aiAssisted').value = '1';
-    
-    // Placeholder for AI integration
-    showToast('AI assistance will help enhance your blog post with better grammar and structure!', 'info', 5000);
+
+    showAILoading('✨ Enhancing your content with AI...');
+
+    fetch('{{ route("blogs.ai.enhanceContent") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title, content })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideAILoading();
+        if (data.success) {
+            document.querySelector('input[name="title"]').value = data.title;
+            document.querySelector('textarea[name="content"]').value = data.content;
+            document.getElementById('aiAssisted').value = '1';
+            showToast(data.message || 'Content enhanced successfully!', 'success');
+        } else {
+            showToast(data.message || 'Failed to enhance content', 'error');
+        }
+    })
+    .catch(error => {
+        hideAILoading();
+        showToast('Error: ' + error.message, 'error');
+    });
+}
+
+// Generate banner
+function generateWebBanner() {
+    const title = document.querySelector('input[name="title"]').value.trim();
+
+    if (!title) {
+        showToast('Please enter a title first!', 'warning');
+        return;
+    }
+
+    showAILoading('🎨 Generating banner image with DALL-E...');
+
+    fetch('{{ route("blogs.ai.generateBanner") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title, content: document.querySelector('textarea[name="content"]').value })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideAILoading();
+        if (data.success) {
+            const container = document.getElementById('aiGeneratedImageContainer');
+            container.innerHTML = `<input type="hidden" name="ai_banner_image" value="${data.image_path}">`;
+            
+            const preview = document.getElementById('mediaPreview');
+            preview.innerHTML = `<div class="alert alert-warning">
+                <i class="bi bi-magic me-2"></i>AI Generated Banner Image Added
+                <img src="${data.image_url}" class="img-fluid rounded mt-2" style="max-height: 200px;">
+            </div>`;
+            preview.style.display = 'block';
+            
+            document.getElementById('aiAssisted').value = '1';
+            showToast(data.message || 'Banner generated successfully!', 'success');
+        } else {
+            showToast(data.message || 'Failed to generate banner', 'error');
+        }
+    })
+    .catch(error => {
+        hideAILoading();
+        showToast('Error: ' + error.message, 'error');
+    });
+}
+
+// Show/Hide AI loading overlay
+function showAILoading(message) {
+    document.getElementById('aiLoadingText').textContent = message;
+    document.getElementById('aiLoadingOverlay').style.display = 'flex';
+}
+
+function hideAILoading() {
+    document.getElementById('aiLoadingOverlay').style.display = 'none';
 }
 
 // Delete Confirmation
