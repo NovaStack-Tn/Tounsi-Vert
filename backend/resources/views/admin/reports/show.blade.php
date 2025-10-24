@@ -4,9 +4,12 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="mb-4">
+    <div class="mb-4 d-flex justify-content-between align-items-center">
         <a href="{{ route('admin.reports.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-2"></i>Back to Reports
+        </a>
+        <a href="{{ route('admin.reports.exportSinglePDF', $report) }}" target="_blank" class="btn btn-danger">
+            <i class="bi bi-file-earmark-pdf me-2"></i>Export as PDF
         </a>
     </div>
 
@@ -44,7 +47,14 @@
                     <!-- AI Analysis -->
                     @if($report->ai_analysis)
                         <div class="mb-4 p-3 bg-light rounded border-start border-4 border-info">
-                            <h6 class="text-info mb-3"><i class="bi bi-robot me-2"></i>AI Analysis</h6>
+                            <h6 class="text-info mb-3">
+                                <i class="bi bi-robot me-2"></i>
+                                @if($report->ai_analysis['ai_powered'] ?? false)
+                                    <span class="badge bg-success">Gemini AI Analysis</span>
+                                @else
+                                    AI Analysis
+                                @endif
+                            </h6>
                             <div class="row">
                                 <div class="col-md-6">
                                     <p class="mb-2">
@@ -74,8 +84,23 @@
                                     @endif
                                 </div>
                             </div>
+                            
+                            @if(isset($report->ai_analysis['analysis_summary']) && !empty($report->ai_analysis['analysis_summary']))
+                                <div class="alert alert-info mt-3 mb-2">
+                                    <strong><i class="bi bi-lightbulb me-2"></i>Gemini Analysis:</strong><br>
+                                    {{ $report->ai_analysis['analysis_summary'] }}
+                                </div>
+                            @endif
+                            
+                            @if(isset($report->ai_analysis['recommended_action']) && !empty($report->ai_analysis['recommended_action']))
+                                <div class="alert alert-warning mt-2 mb-2">
+                                    <strong><i class="bi bi-check-circle me-2"></i>Recommended Action:</strong><br>
+                                    {{ $report->ai_analysis['recommended_action'] }}
+                                </div>
+                            @endif
+                            
                             @if($report->ai_analysis['requires_immediate_attention'] ?? false)
-                                <div class="alert alert-danger mt-3 mb-0">
+                                <div class="alert alert-danger mt-2 mb-0">
                                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
                                     <strong>AI Alert:</strong> This report requires immediate attention!
                                 </div>

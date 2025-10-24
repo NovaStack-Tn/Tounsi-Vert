@@ -5,13 +5,191 @@ namespace App\Services;
 use App\Models\Report;
 use App\Models\Organization;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ReportAnalysisService
 {
+    protected $apiKey;
+    protected $apiUrl;
+    protected $model;
+    
+    public function __construct()
+    {
+        $this->apiKey = config('services.gemini.api_key');
+        $this->model = config('services.gemini.model', 'gemini-pro');
+        $this->apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/{$this->model}:generateContent";
+    }
+    
     /**
-     * Analyze report content using AI-like pattern matching
+     * Analyze report content using Gemini AI
      */
     public function analyzeReportContent(string $reason, string $details): array
+    {
+        // Try Gemini AI first
+        $geminiAnalysis = $this->analyzeWithGemini($reason, $details);
+        
+        if ($geminiAnalysis) {
+            return $geminiAnalysis;
+        }
+        
+        // Fallback to pattern matching if Gemini fails
+        return $this->analyzeWithPatternMatching($reason, $details);
+    }
+    
+    /**
+     * Analyze report using Gemini AI
+     */
+    protected function analyzeWithGemini(string $reason, string $details): ?array
+    {
+        if (empty($this->apiKey)) {
+            Log::warning('Gemini API key not configured for report analysis');
+            return null;
+        }
+        
+        try {
+            $prompt = $this->buildReportAnalysisPrompt($reason, $details);
+            $response = $this->callGemini($prompt);
+            
+            if ($response) {
+                $analysis = $this->parseGeminiResponse($response);
+                
+                if ($analysis) {
+                    Log::info('Gemini AI Report Analysis', [
+                        'suggested_category' => $analysis['suggested_category'],
+                        'risk_score' => $analysis['risk_score'],
+                        'timestamp' => now(),
+                    ]);
+                    
+                    return $analysis;
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Gemini report analysis failed', ['error' => $e->getMessage()]);
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Build Gemini prompt for report analysis
+     */
+    protected function buildReportAnalysisPrompt(string $reason, string $details): string
+    {
+        return <<<PROMPT
+You are an AI content moderator for Tounsi-Vert, an environmental and social events platform in Tunisia.
+
+Analyze the following report and determine if it contains violations:
+
+Report Reason: {$reason}
+Report Details: {$details}
+
+Categories to check:
+- spam: Promotional content, advertisements, repetitive messages
+- inappropriate: Offensive, vulgar, explicit, NSFW content
+- fraud: Scams, fake information, phishing, deceptive practices
+- harassment: Bullying, threats, stalking, hate speech, discrimination
+- violence: Violent content, threats of harm, dangerous activities
+- misinformation: False environmental claims, misleading information
+- copyright: Copyright violations, unauthorized content use
+- other: Other policy violations
+
+Provide your analysis in JSON format with:
+{
+  "suggested_category": "category_name",
+  "confidence": 85,
+  "priority": "low|medium|high|critical",
+  "risk_score": 75,
+  "category_scores": {
+    "spam": 20,
+    "inappropriate": 10,
+    "fraud": 85,
+    "harassment": 5,
+    "violence": 15,
+    "misinformation": 30,
+    "copyright": 0,
+    "other": 10
+  },
+  "requires_immediate_attention": true,
+  "auto_flag": true,
+  "analysis_summary": "Brief explanation of the violation",
+  "recommended_action": "Suggested action to take"
+}
+
+Be strict in your analysis. Prioritize user safety and platform integrity.
+PROMPT;
+    }
+    
+    /**
+     * Call Gemini API
+     */
+    protected function callGemini(string $prompt): ?string
+    {
+        try {
+            $response = Http::timeout(30)->post($this->apiUrl . '?key=' . $this->apiKey, [
+                'contents' => [
+                    [
+                        'parts' => [
+                            ['text' => $prompt]
+                        ]
+                    ]
+                ],
+                'generationConfig' => [
+                    'temperature' => 0.3,  // Lower temperature for more consistent analysis
+                    'topK' => 40,
+                    'topP' => 0.95,
+                    'maxOutputTokens' => 1024,
+                ]
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                return $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+            }
+
+            Log::error('Gemini API Error', ['response' => $response->body()]);
+            return null;
+
+        } catch (\Exception $e) {
+            Log::error('Gemini API Exception', ['error' => $e->getMessage()]);
+            return null;
+        }
+    }
+    
+    /**
+     * Parse Gemini response
+     */
+    protected function parseGeminiResponse(string $response): ?array
+    {
+        // Try to extract JSON from response
+        if (preg_match('/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/s', $response, $matches)) {
+            $json = json_decode($matches[0], true);
+            
+            if ($json && isset($json['suggested_category'])) {
+                // Validate and normalize the response
+                return [
+                    'suggested_category' => $json['suggested_category'] ?? 'other',
+                    'confidence' => min(100, max(0, $json['confidence'] ?? 50)),
+                    'priority' => in_array($json['priority'] ?? 'medium', ['low', 'medium', 'high', 'critical']) 
+                        ? $json['priority'] : 'medium',
+                    'risk_score' => min(100, max(0, $json['risk_score'] ?? 50)),
+                    'category_scores' => $json['category_scores'] ?? [],
+                    'requires_immediate_attention' => $json['requires_immediate_attention'] ?? false,
+                    'auto_flag' => $json['auto_flag'] ?? false,
+                    'analysis_summary' => $json['analysis_summary'] ?? '',
+                    'recommended_action' => $json['recommended_action'] ?? '',
+                    'ai_powered' => true,
+                ];
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Fallback: Analyze report content using pattern matching
+     */
+    protected function analyzeWithPatternMatching(string $reason, string $details): array
     {
         $content = strtolower($reason . ' ' . $details);
         
@@ -72,6 +250,7 @@ class ReportAnalysisService
             'category_scores' => array_map(fn($s) => round($s * 100, 2), $scores),
             'requires_immediate_attention' => $riskScore >= 80,
             'auto_flag' => $this->shouldAutoFlag($scores, $riskScore),
+            'ai_powered' => false,
         ];
     }
     

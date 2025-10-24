@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Report;
 use App\Models\ReportAction;
 use App\Services\ReportAnalysisService;
+use App\Services\ReportExportService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
 
 class AdminReportController extends Controller
 {
@@ -206,5 +208,154 @@ class AdminReportController extends Controller
         ]);
 
         return back()->with('success', count($request->report_ids) . ' reports updated successfully!');
+    }
+    
+    /**
+     * Export reports to CSV
+     */
+    public function exportCSV(Request $request)
+    {
+        $analysisService = new ReportAnalysisService();
+        $exportService = new ReportExportService();
+        
+        // Get filtered reports
+        $filters = $request->only([
+            'search', 'status', 'priority', 'category',
+            'date_from', 'date_to', 'organization_id', 'user_id'
+        ]);
+        
+        $reports = $analysisService->searchReports($filters)
+            ->with(['user', 'organization', 'event', 'resolver'])
+            ->get();
+        
+        $csv = $exportService->exportToCSV($reports);
+        
+        $filename = 'reports_export_' . now()->format('Y-m-d_His') . '.csv';
+        
+        return Response::make($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+    
+    /**
+     * Export reports to Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        $analysisService = new ReportAnalysisService();
+        $exportService = new ReportExportService();
+        
+        $filters = $request->only([
+            'search', 'status', 'priority', 'category',
+            'date_from', 'date_to', 'organization_id', 'user_id'
+        ]);
+        
+        $reports = $analysisService->searchReports($filters)
+            ->with(['user', 'organization', 'event', 'resolver'])
+            ->get();
+        
+        $excel = $exportService->exportToExcel($reports);
+        
+        $filename = 'reports_export_' . now()->format('Y-m-d_His') . '.xls';
+        
+        return Response::make($excel, 200, [
+            'Content-Type' => 'application/vnd.ms-excel',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+    
+    /**
+     * Export reports to PDF
+     */
+    public function exportPDF(Request $request)
+    {
+        $analysisService = new ReportAnalysisService();
+        $exportService = new ReportExportService();
+        
+        $filters = $request->only([
+            'search', 'status', 'priority', 'category',
+            'date_from', 'date_to', 'organization_id', 'user_id'
+        ]);
+        
+        $reports = $analysisService->searchReports($filters)
+            ->with(['user', 'organization', 'event', 'resolver'])
+            ->get();
+        
+        $stats = $exportService->generateStatisticsSummary($reports);
+        $html = $exportService->generatePDFContent($reports, $stats);
+        
+        $filename = 'reports_export_' . now()->format('Y-m-d_His') . '.html';
+        
+        return Response::make($html, 200, [
+            'Content-Type' => 'text/html',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+        ]);
+    }
+    
+    /**
+     * Export single report to PDF
+     */
+    public function exportSinglePDF(Report $report)
+    {
+        $report->load(['user', 'organization', 'event', 'actions.admin', 'resolver']);
+        
+        $exportService = new ReportExportService();
+        $html = $exportService->generateSingleReportPDF($report);
+        
+        $filename = 'report_' . $report->id . '_' . now()->format('Y-m-d') . '.html';
+        
+        return Response::make($html, 200, [
+            'Content-Type' => 'text/html',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+        ]);
+    }
+    
+    /**
+     * Export reports to JSON
+     */
+    public function exportJSON(Request $request)
+    {
+        $analysisService = new ReportAnalysisService();
+        $exportService = new ReportExportService();
+        
+        $filters = $request->only([
+            'search', 'status', 'priority', 'category',
+            'date_from', 'date_to', 'organization_id', 'user_id'
+        ]);
+        
+        $reports = $analysisService->searchReports($filters)
+            ->with(['user', 'organization', 'event', 'resolver', 'actions'])
+            ->get();
+        
+        $json = $exportService->exportToJSON($reports);
+        
+        $filename = 'reports_export_' . now()->format('Y-m-d_His') . '.json';
+        
+        return Response::make($json, 200, [
+            'Content-Type' => 'application/json',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+    
+    /**
+     * Advanced analytics dashboard
+     */
+    public function advancedAnalytics(Request $request)
+    {
+        $analysisService = new ReportAnalysisService();
+        $exportService = new ReportExportService();
+        
+        $filters = $request->only([
+            'date_from', 'date_to', 'status', 'priority', 'category'
+        ]);
+        
+        $reports = $analysisService->searchReports($filters)
+            ->with(['user', 'organization', 'event'])
+            ->get();
+        
+        $analytics = $exportService->generateAnalyticsReport($reports);
+        
+        return view('admin.reports.advanced-analytics', compact('analytics', 'filters'));
     }
 }

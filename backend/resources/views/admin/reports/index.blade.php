@@ -27,8 +27,23 @@
             <p class="text-muted">Review and manage user reports with AI-powered analysis</p>
         </div>
         <div>
-            <a href="{{ route('admin.reports.analytics') }}" class="btn btn-primary me-2">
-                <i class="bi bi-graph-up me-1"></i>Analytics
+            <div class="btn-group me-2">
+                <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="bi bi-download me-1"></i>Export
+                </button>
+                <ul class="dropdown-menu">
+                  
+                    <li><a class="dropdown-item" href="{{ route('admin.reports.exportExcel', request()->all()) }}">
+                        <i class="bi bi-file-earmark-excel me-2"></i>Export as Excel
+                    </a></li>
+                    <li><a class="dropdown-item" href="{{ route('admin.reports.exportPDF', request()->all()) }}" target="_blank">
+                        <i class="bi bi-file-earmark-pdf me-2"></i>Export as PDF
+                    </a></li>
+                
+                </ul>
+            </div>
+            <a href="{{ route('admin.reports.advancedAnalytics') }}" class="btn btn-info me-2">
+                <i class="bi bi-bar-chart-line me-1"></i>Advanced Analytics
             </a>
             <button class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#advancedSearch">
                 <i class="bi bi-search me-1"></i>Advanced Search
@@ -278,6 +293,11 @@
                                         @if($report->ai_auto_flagged)
                                             <span class="badge bg-danger me-1" title="Auto-flagged by AI">
                                                 <i class="bi bi-flag-fill me-1"></i>AI Flagged
+                                            </span>
+                                        @endif
+                                        @if(isset($report->ai_analysis['ai_powered']) && $report->ai_analysis['ai_powered'])
+                                            <span class="badge bg-success me-1" title="Analyzed by Gemini AI">
+                                                <i class="bi bi-stars me-1"></i>Gemini
                                             </span>
                                         @endif
                                     </div>
