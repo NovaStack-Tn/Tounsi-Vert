@@ -50,10 +50,10 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="btn btn-outline-success w-100 py-3" style="cursor: pointer; border-style: dashed;">
-                                        <i class="bi bi-image fs-3 d-block mb-2"></i>
-                                        <span class="d-block">Upload Image</span>
-                                        <small class="text-muted">Max: 5MB</small>
-                                        <input type="file" name="image" accept="image/*" class="d-none" onchange="previewMedia(this, 'image')">
+                                        <i class="bi bi-images fs-3 d-block mb-2"></i>
+                                        <span class="d-block">Upload Images</span>
+                                        <small class="text-muted">Max: 5 images, 5MB each</small>
+                                        <input type="file" name="images[]" accept="image/*" multiple class="d-none" onchange="previewImages(this)">
                                     </label>
                                 </div>
                                 <div class="col-md-6">
@@ -61,11 +61,11 @@
                                         <i class="bi bi-camera-video fs-3 d-block mb-2"></i>
                                         <span class="d-block">Upload Video</span>
                                         <small class="text-muted">Max: 50MB</small>
-                                        <input type="file" name="video" accept="video/*" class="d-none" onchange="previewMedia(this, 'video')">
+                                        <input type="file" name="video" accept="video/*" class="d-none" onchange="previewVideo(this)">
                                     </label>
                                 </div>
                             </div>
-                            @error('image')
+                            @error('images')
                                 <div class="text-danger small mt-2">{{ $message }}</div>
                             @enderror
                             @error('video')
@@ -112,57 +112,88 @@
 
 @push('scripts')
 <script>
-function previewMedia(input, type) {
+function previewImages(input) {
     const preview = document.getElementById('mediaPreview');
-    preview.innerHTML = '';
+    
+    if (input.files && input.files.length > 0) {
+        if (input.files.length > 5) {
+            alert('Maximum 5 images allowed!');
+            input.value = '';
+            return;
+        }
+        
+        preview.innerHTML = '<div class="row g-2"></div>';
+        preview.style.display = 'block';
+        
+        Array.from(input.files).forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const col = document.createElement('div');
+                col.className = 'col-md-4';
+                col.innerHTML = `
+                    <div class="position-relative">
+                        <img src="${e.target.result}" class="img-fluid rounded" style="height: 200px; width: 100%; object-fit: cover;">
+                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" 
+                                onclick="removeImagePreview(${index})">
+                            <i class="bi bi-x"></i>
+                        </button>
+                        <span class="badge bg-success position-absolute bottom-0 start-0 m-1">${index + 1}</span>
+                    </div>`;
+                preview.querySelector('.row').appendChild(col);
+            }
+            reader.readAsDataURL(file);
+        });
+    }
+}
+
+function previewVideo(input) {
+    const preview = document.getElementById('mediaPreview');
     
     if (input.files && input.files[0]) {
         const file = input.files[0];
         const reader = new FileReader();
         
         reader.onload = function(e) {
-            preview.style.display = 'block';
+            const videoPreview = document.createElement('div');
+            videoPreview.id = 'videoPreviewContainer';
+            videoPreview.innerHTML = `
+                <div class="position-relative mt-3">
+                    <video src="${e.target.result}" class="w-100 rounded" controls style="max-height: 400px;"></video>
+                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" 
+                            onclick="clearVideo()">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>`;
             
-            if (type === 'image') {
-                // Clear video input
-                const videoInput = document.querySelector('input[name="video"]');
-                if (videoInput) videoInput.value = '';
-                
-                preview.innerHTML = `
-                    <div class="position-relative">
-                        <img src="${e.target.result}" class="img-fluid rounded" style="max-height: 400px;">
-                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" 
-                                onclick="clearMedia('image')">
-                            <i class="bi bi-x"></i>
-                        </button>
-                    </div>`;
-            } else if (type === 'video') {
-                // Clear image input
-                const imageInput = document.querySelector('input[name="image"]');
-                if (imageInput) imageInput.value = '';
-                
-                preview.innerHTML = `
-                    <div class="position-relative">
-                        <video src="${e.target.result}" class="w-100 rounded" controls style="max-height: 400px;"></video>
-                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" 
-                                onclick="clearMedia('video')">
-                            <i class="bi bi-x"></i>
-                        </button>
-                    </div>`;
-            }
+            const existingVideo = document.getElementById('videoPreviewContainer');
+            if (existingVideo) existingVideo.remove();
+            
+            preview.appendChild(videoPreview);
+            preview.style.display = 'block';
         }
         
         reader.readAsDataURL(file);
     }
 }
 
-function clearMedia(type) {
-    const input = document.querySelector(`input[name="${type}"]`);
+function removeImagePreview(index) {
+    const input = document.querySelector('input[name="images[]"]');
+    if (input) {
+        const dt = new DataTransfer();
+        const files = Array.from(input.files);
+        files.splice(index, 1);
+        files.forEach(file => dt.items.add(file));
+        input.files = dt.files;
+        previewImages(input);
+    }
+}
+
+function clearVideo() {
+    const input = document.querySelector('input[name="video"]');
     if (input) input.value = '';
     
-    const preview = document.getElementById('mediaPreview');
-    preview.innerHTML = '';
-    preview.style.display = 'none';
+    const videoContainer = document.getElementById('videoPreviewContainer');
+    if (videoContainer) videoContainer.remove();
 }
 
 function requestAIHelp() {
@@ -174,10 +205,7 @@ function requestAIHelp() {
         return;
     }
     
-    // Mark as AI assisted
     document.getElementById('aiAssisted').value = '1';
-    
-    // Placeholder for AI integration
     alert('AI assistance will help enhance your blog post with better grammar and structure! (Feature coming soon)');
 }
 </script>

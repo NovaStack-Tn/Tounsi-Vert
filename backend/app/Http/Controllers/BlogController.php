@@ -74,36 +74,49 @@ class BlogController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string|min:10',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'images' => 'nullable|array|max:5',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
             'video' => 'nullable|mimes:mp4,mov,avi,wmv|max:51200',
             'ai_assisted' => 'nullable|boolean',
         ]);
 
-        $imagePath = null;
+        $imagesPaths = [];
         $videoPath = null;
-        $mediaType = 'none';
+        $hasImages = false;
+        $hasVideo = false;
 
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('blogs/images', 'public');
-            $mediaType = 'image';
+        // Handle multiple images
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $imagesPaths[] = $image->store('blogs/images', 'public');
+            }
+            $hasImages = true;
         }
 
+        // Handle video
         if ($request->hasFile('video')) {
             $videoPath = $request->file('video')->store('blogs/videos', 'public');
-            $mediaType = 'video';
-            $imagePath = null; // Video takes priority
+            $hasVideo = true;
         }
 
         $blog = Blog::create([
             'user_id' => auth()->id(),
             'title' => $request->title,
             'content' => $request->content,
-            'image_path' => $imagePath,
+            'image_path' => !empty($imagesPaths) ? $imagesPaths[0] : null, // Keep first image for backward compatibility
+            'images_paths' => $imagesPaths,
             'video_path' => $videoPath,
-            'media_type' => $mediaType,
+            'has_images' => $hasImages,
+            'has_video' => $hasVideo,
             'ai_assisted' => $request->boolean('ai_assisted', false),
             'is_published' => true,
         ]);
+
+        // Check if from organizer panel
+        if ($request->routeIs('organizer.*') || str_contains(url()->previous(), '/organizer/')) {
+            return redirect()->route('organizer.blogs.show', $blog)
+                ->with('success', 'Blog created successfully!');
+        }
 
         return redirect()->route('blogs.show', $blog)
             ->with('success', 'Blog created successfully!');
@@ -151,8 +164,11 @@ class BlogController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string|min:10',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'images' => 'nullable|array|max:5',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
             'video' => 'nullable|mimes:mp4,mov,avi,wmv|max:51200',
+            'remove_images' => 'nullable|array',
+            'remove_video' => 'nullable|boolean',
         ]);
 
         $updateData = [
@@ -160,35 +176,53 @@ class BlogController extends Controller
             'content' => $request->content,
         ];
 
-        if ($request->hasFile('image')) {
-            // Delete old media
-            if ($blog->image_path) {
-                Storage::disk('public')->delete($blog->image_path);
+        // Handle image removal
+        if ($request->has('remove_images')) {
+            $existingImages = $blog->images_paths ?? [];
+            foreach ($request->remove_images as $imageToRemove) {
+                if (($key = array_search($imageToRemove, $existingImages)) !== false) {
+                    Storage::disk('public')->delete($imageToRemove);
+                    unset($existingImages[$key]);
+                }
             }
-            if ($blog->video_path) {
-                Storage::disk('public')->delete($blog->video_path);
-            }
-            
-            $updateData['image_path'] = $request->file('image')->store('blogs/images', 'public');
-            $updateData['video_path'] = null;
-            $updateData['media_type'] = 'image';
+            $updateData['images_paths'] = array_values($existingImages);
+            $updateData['has_images'] = count($existingImages) > 0;
         }
 
-        if ($request->hasFile('video')) {
-            // Delete old media
-            if ($blog->image_path) {
-                Storage::disk('public')->delete($blog->image_path);
+        // Handle new images
+        if ($request->hasFile('images')) {
+            $existingImages = $updateData['images_paths'] ?? $blog->images_paths ?? [];
+            foreach ($request->file('images') as $image) {
+                $existingImages[] = $image->store('blogs/images', 'public');
             }
+            $updateData['images_paths'] = $existingImages;
+            $updateData['image_path'] = $existingImages[0] ?? null;
+            $updateData['has_images'] = true;
+        }
+
+        // Handle video removal
+        if ($request->boolean('remove_video') && $blog->video_path) {
+            Storage::disk('public')->delete($blog->video_path);
+            $updateData['video_path'] = null;
+            $updateData['has_video'] = false;
+        }
+
+        // Handle new video
+        if ($request->hasFile('video')) {
             if ($blog->video_path) {
                 Storage::disk('public')->delete($blog->video_path);
             }
-            
             $updateData['video_path'] = $request->file('video')->store('blogs/videos', 'public');
-            $updateData['image_path'] = null;
-            $updateData['media_type'] = 'video';
+            $updateData['has_video'] = true;
         }
 
         $blog->update($updateData);
+
+        // Check if from organizer panel
+        if ($request->routeIs('organizer.*') || str_contains(url()->previous(), '/organizer/')) {
+            return redirect()->route('organizer.blogs.show', $blog)
+                ->with('success', 'Blog updated successfully!');
+        }
 
         return redirect()->route('blogs.show', $blog)
             ->with('success', 'Blog updated successfully!');
@@ -201,16 +235,25 @@ class BlogController extends Controller
     {
         $this->authorize('delete', $blog);
 
-        // Delete media files
-        if ($blog->image_path) {
-            Storage::disk('public')->delete($blog->image_path);
+        // Delete all images
+        if ($blog->images_paths) {
+            foreach ($blog->images_paths as $imagePath) {
+                Storage::disk('public')->delete($imagePath);
+            }
         }
         
+        // Delete video
         if ($blog->video_path) {
             Storage::disk('public')->delete($blog->video_path);
         }
 
         $blog->delete();
+
+        // Check if from organizer panel
+        if (str_contains(url()->previous(), '/organizer/')) {
+            return redirect()->route('organizer.blogs.index')
+                ->with('success', 'Blog deleted successfully!');
+        }
 
         return redirect()->route('blogs.index')
             ->with('success', 'Blog deleted successfully!');

@@ -25,15 +25,55 @@
         <div class="col-lg-4 col-md-6 mb-4">
             <div class="card h-100 shadow-sm blog-card" style="border-radius: 15px; transition: all 0.3s; overflow: hidden;">
                 <!-- Media -->
-                @if($blog->media_type === 'image' && $blog->image_path)
-                <img src="{{ Storage::url($blog->image_path) }}" 
-                     class="card-img-top" 
-                     style="height: 200px; object-fit: cover;">
-                @elseif($blog->media_type === 'video' && $blog->video_path)
+                @if($blog->has_images && $blog->images_paths && count($blog->images_paths) > 0)
+                    @if(count($blog->images_paths) === 1)
+                        <img src="{{ Storage::url($blog->images_paths[0]) }}" 
+                             class="card-img-top" 
+                             style="height: 200px; object-fit: cover;">
+                    @else
+                        <!-- Mini Carousel -->
+                        <div id="orgBlogCarousel{{ $blog->id }}" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-indicators" style="margin-bottom: 5px;">
+                                @foreach($blog->images_paths as $index => $imagePath)
+                                <button type="button" 
+                                        data-bs-target="#orgBlogCarousel{{ $blog->id }}" 
+                                        data-bs-slide-to="{{ $index }}" 
+                                        class="{{ $index === 0 ? 'active' : '' }}"
+                                        style="width: 6px; height: 6px; border-radius: 50%;"></button>
+                                @endforeach
+                            </div>
+                            <div class="carousel-inner">
+                                @foreach($blog->images_paths as $index => $imagePath)
+                                <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                                    <img src="{{ Storage::url($imagePath) }}" 
+                                         class="d-block w-100" 
+                                         style="height: 200px; object-fit: cover;">
+                                </div>
+                                @endforeach
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#orgBlogCarousel{{ $blog->id }}" data-bs-slide="prev" style="width: 30px;">
+                                <span class="carousel-control-prev-icon" aria-hidden="true" style="background-color: rgba(0,0,0,0.5); border-radius: 50%; padding: 10px;"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#orgBlogCarousel{{ $blog->id }}" data-bs-slide="next" style="width: 30px;">
+                                <span class="carousel-control-next-icon" aria-hidden="true" style="background-color: rgba(0,0,0,0.5); border-radius: 50%; padding: 10px;"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                            <div class="position-absolute top-0 end-0 m-2">
+                                <span class="badge bg-dark bg-opacity-75 small">
+                                    <i class="bi bi-images me-1"></i>{{ count($blog->images_paths) }}
+                                </span>
+                            </div>
+                        </div>
+                    @endif
+                @elseif($blog->has_video && $blog->video_path)
                 <div class="position-relative" style="height: 200px; background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);">
                     <div class="position-absolute top-50 start-50 translate-middle text-white">
                         <i class="bi bi-play-circle" style="font-size: 4rem;"></i>
                     </div>
+                    <span class="badge bg-dark bg-opacity-75 position-absolute top-0 end-0 m-2">
+                        <i class="bi bi-camera-video me-1"></i>Video
+                    </span>
                 </div>
                 @else
                 <div style="height: 200px; background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%); display: flex; align-items: center; justify-content: center;">
@@ -147,6 +187,21 @@
     .blog-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+    }
+
+    /* Carousel styling */
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+    
+    .carousel-indicators [data-bs-target] {
+        background-color: rgba(255,255,255,0.6);
+        border: 1px solid rgba(0,0,0,0.2);
+    }
+    
+    .carousel-indicators .active {
+        background-color: #fff;
     }
 </style>
 

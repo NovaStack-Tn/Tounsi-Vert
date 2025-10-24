@@ -53,18 +53,53 @@
                     </div>
 
                     <!-- Media -->
-                    @if($blog->media_type === 'image' && $blog->image_path)
+                    @if($blog->has_images && $blog->images_paths && count($blog->images_paths) > 0)
                     <div class="mb-4">
-                        <img src="{{ Storage::url($blog->image_path) }}" 
-                             alt="{{ $blog->title }}" 
-                             class="img-fluid rounded shadow-sm"
-                             style="width: 100%; max-height: 500px; object-fit: cover;">
+                        @if(count($blog->images_paths) === 1)
+                            <!-- Single Image -->
+                            <img src="{{ Storage::url($blog->images_paths[0]) }}" 
+                                 alt="{{ $blog->title }}" 
+                                 class="img-fluid rounded shadow-sm"
+                                 style="width: 100%; max-height: 500px; object-fit: cover;">
+                        @else
+                            <!-- Image Carousel -->
+                            <div id="blogImagesCarousel" class="carousel slide shadow-sm rounded overflow-hidden" data-bs-ride="carousel">
+                                <div class="carousel-indicators">
+                                    @foreach($blog->images_paths as $index => $imagePath)
+                                    <button type="button" data-bs-target="#blogImagesCarousel" data-bs-slide-to="{{ $index }}" 
+                                            class="{{ $index === 0 ? 'active' : '' }}" 
+                                            aria-current="{{ $index === 0 ? 'true' : 'false' }}" 
+                                            aria-label="Slide {{ $index + 1 }}"></button>
+                                    @endforeach
+                                </div>
+                                <div class="carousel-inner">
+                                    @foreach($blog->images_paths as $index => $imagePath)
+                                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                                        <img src="{{ Storage::url($imagePath) }}" 
+                                             class="d-block w-100" 
+                                             alt="{{ $blog->title }}" 
+                                             style="height: 500px; object-fit: cover;">
+                                    </div>
+                                    @endforeach
+                                </div>
+                                @if(count($blog->images_paths) > 1)
+                                <button class="carousel-control-prev" type="button" data-bs-target="#blogImagesCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#blogImagesCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                                @endif
+                            </div>
+                        @endif
                     </div>
                     @endif
 
-                    @if($blog->media_type === 'video' && $blog->video_path)
+                    @if($blog->has_video && $blog->video_path)
                     <div class="mb-4">
-                        <div class="ratio ratio-16x9 rounded overflow-hidden shadow-sm">
+                        <div class="ratio ratio-16x9 rounded overflow-hidden shadow-sm" style="background: #000;">
                             <video controls class="w-100">
                                 <source src="{{ Storage::url($blog->video_path) }}" type="video/mp4">
                                 Your browser does not support the video tag.
@@ -253,6 +288,33 @@
 </div>
 
 @push('scripts')
+<style>
+    /* Carousel styling */
+    #blogImagesCarousel .carousel-control-prev-icon,
+    #blogImagesCarousel .carousel-control-next-icon {
+        background-color: rgba(0,0,0,0.5);
+        border-radius: 50%;
+        padding: 20px;
+        filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+    }
+    
+    #blogImagesCarousel .carousel-indicators {
+        margin-bottom: 15px;
+    }
+    
+    #blogImagesCarousel .carousel-indicators [data-bs-target] {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: rgba(255,255,255,0.6);
+        border: 2px solid rgba(0,0,0,0.3);
+    }
+    
+    #blogImagesCarousel .carousel-indicators .active {
+        background-color: #fff;
+    }
+</style>
+
 <script>
 let deleteFormId = null;
 

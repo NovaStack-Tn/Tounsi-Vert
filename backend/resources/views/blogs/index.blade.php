@@ -41,13 +41,13 @@
                                 
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="d-flex gap-2">
-                                        <label class="btn btn-light btn-sm rounded-pill" style="cursor: pointer;" title="Upload Image">
-                                            <i class="bi bi-image text-success"></i>
-                                            <input type="file" name="image" accept="image/*" style="display: none;" onchange="previewMedia(this, 'image')">
+                                        <label class="btn btn-light btn-sm rounded-pill" style="cursor: pointer;" title="Upload Images (Max 5)">
+                                            <i class="bi bi-images text-success"></i>
+                                            <input type="file" name="images[]" accept="image/*" multiple style="display: none;" onchange="previewImages(this)">
                                         </label>
                                         <label class="btn btn-light btn-sm rounded-pill" style="cursor: pointer;" title="Upload Video">
                                             <i class="bi bi-camera-video text-success"></i>
-                                            <input type="file" name="video" accept="video/*" style="display: none;" onchange="previewMedia(this, 'video')">
+                                            <input type="file" name="video" accept="video/*" style="display: none;" onchange="previewVideo(this)">
                                         </label>
                                         <button type="button" class="btn btn-light btn-sm rounded-pill" onclick="requestAIHelp()" title="AI Assistance">
                                             <i class="bi bi-stars text-warning"></i> AI Help
@@ -150,17 +150,58 @@
                     </div>
 
                     <!-- Media Display -->
-                    @if($blog->media_type === 'image' && $blog->image_path)
-                    <div class="blog-media">
-                        <img src="{{ Storage::url($blog->image_path) }}" 
-                             alt="{{ $blog->title }}" 
-                             class="img-fluid w-100" 
-                             style="max-height: 500px; object-fit: cover;">
+                    @if($blog->has_images && $blog->images_paths && count($blog->images_paths) > 0)
+                    <div class="blog-media mb-2">
+                        @if(count($blog->images_paths) === 1)
+                            <img src="{{ Storage::url($blog->images_paths[0]) }}" 
+                                 alt="{{ $blog->title }}" 
+                                 class="img-fluid w-100" 
+                                 style="max-height: 500px; object-fit: cover; border-radius: 0;">
+                        @else
+                            <!-- Mini Carousel for multiple images -->
+                            <div id="blogCarousel{{ $blog->id }}" class="carousel slide" data-bs-ride="carousel" onclick="event.stopPropagation();">
+                                <div class="carousel-indicators" style="margin-bottom: 10px;">
+                                    @foreach($blog->images_paths as $index => $imagePath)
+                                    <button type="button" 
+                                            data-bs-target="#blogCarousel{{ $blog->id }}" 
+                                            data-bs-slide-to="{{ $index }}" 
+                                            class="{{ $index === 0 ? 'active' : '' }}" 
+                                            aria-current="{{ $index === 0 ? 'true' : 'false' }}" 
+                                            aria-label="Slide {{ $index + 1 }}"
+                                            style="width: 8px; height: 8px; border-radius: 50%;"></button>
+                                    @endforeach
+                                </div>
+                                <div class="carousel-inner">
+                                    @foreach($blog->images_paths as $index => $imagePath)
+                                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                                        <img src="{{ Storage::url($imagePath) }}" 
+                                             class="d-block w-100" 
+                                             alt="{{ $blog->title }}" 
+                                             style="height: 450px; object-fit: cover;">
+                                    </div>
+                                    @endforeach
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#blogCarousel{{ $blog->id }}" data-bs-slide="prev" style="width: 40px;">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true" style="background-color: rgba(0,0,0,0.5); border-radius: 50%; padding: 15px;"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#blogCarousel{{ $blog->id }}" data-bs-slide="next" style="width: 40px;">
+                                    <span class="carousel-control-next-icon" aria-hidden="true" style="background-color: rgba(0,0,0,0.5); border-radius: 50%; padding: 15px;"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                                <!-- Image counter badge -->
+                                <div class="position-absolute top-0 end-0 m-3">
+                                    <span class="badge bg-dark bg-opacity-75">
+                                        <i class="bi bi-images me-1"></i>{{ count($blog->images_paths) }}
+                                    </span>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                     @endif
 
-                    @if($blog->media_type === 'video' && $blog->video_path)
-                    <div class="blog-media" onclick="event.stopPropagation();">
+                    @if($blog->has_video && $blog->video_path)
+                    <div class="blog-media mb-2" onclick="event.stopPropagation();">
                         <video class="w-100" controls style="max-height: 500px; background: #000;">
                             <source src="{{ Storage::url($blog->video_path) }}" type="video/mp4">
                             Your browser does not support the video tag.
@@ -317,35 +358,55 @@
     </div>
 </div>
 
-@push('scripts')
+@push('styles')
 <style>
+    .blog-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 1px solid #e9ecef;
+    }
+    
     .blog-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
-    }
-    .hover-bg:hover {
-        background: #e9ecef !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
     }
     
-    /* Custom Toast Notifications */
-    .custom-toast {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        min-width: 300px;
-        z-index: 9999;
-        animation: slideInRight 0.3s ease;
+    .blog-avatar {
+        transition: transform 0.3s;
     }
     
-    @keyframes slideInRight {
-        from {
-            transform: translateX(400px);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
+    .blog-card:hover .blog-avatar {
+        transform: scale(1.1);
+    }
+    
+    .blog-media {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .blog-media img, 
+    .blog-media video {
+        transition: transform 0.3s;
+    }
+    
+    .blog-card:hover .blog-media img,
+    .blog-card:hover .blog-media video {
+        transform: scale(1.02);
+    }
+
+    /* Carousel styling */
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+    
+    .carousel-indicators [data-bs-target] {
+        background-color: rgba(255,255,255,0.6);
+        border: 1px solid rgba(0,0,0,0.2);
+    }
+    
+    .carousel-indicators .active {
+        background-color: #fff;
     }
     
     @keyframes slideOutRight {
@@ -365,57 +426,92 @@
 </style>
 
 <script>
-function previewMedia(input, type) {
+function previewImages(input) {
     const preview = document.getElementById('mediaPreview');
-    preview.innerHTML = '';
+    
+    if (input.files && input.files.length > 0) {
+        if (input.files.length > 5) {
+            showToast('Maximum 5 images allowed!', 'warning');
+            input.value = '';
+            return;
+        }
+        
+        preview.innerHTML = '<div class="row g-2"></div>';
+        preview.style.display = 'block';
+        
+        Array.from(input.files).forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const col = document.createElement('div');
+                col.className = 'col-md-4';
+                col.innerHTML = `
+                    <div class="position-relative">
+                        <img src="${e.target.result}" class="img-fluid rounded" style="height: 150px; width: 100%; object-fit: cover;">
+                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" 
+                                onclick="removeImagePreview(${index})">
+                            <i class="bi bi-x"></i>
+                        </button>
+                        <span class="badge bg-success position-absolute bottom-0 start-0 m-1">${index + 1}</span>
+                    </div>`;
+                preview.querySelector('.row').appendChild(col);
+            }
+            reader.readAsDataURL(file);
+        });
+    }
+}
+
+function previewVideo(input) {
+    const preview = document.getElementById('mediaPreview');
     
     if (input.files && input.files[0]) {
         const file = input.files[0];
         const reader = new FileReader();
         
         reader.onload = function(e) {
-            preview.style.display = 'block';
+            const videoPreview = document.createElement('div');
+            videoPreview.id = 'videoPreviewContainer';
+            videoPreview.innerHTML = `
+                <div class="position-relative mt-3">
+                    <video src="${e.target.result}" class="w-100 rounded" controls style="max-height: 300px; background: #000;"></video>
+                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" 
+                            onclick="clearVideo()">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>`;
             
-            if (type === 'image') {
-                // Clear video input if exists
-                const videoInput = document.querySelector('input[name="video"]');
-                if (videoInput) videoInput.value = '';
-                
-                preview.innerHTML = `
-                    <div class="position-relative">
-                        <img src="${e.target.result}" class="img-fluid rounded" style="max-height: 300px;">
-                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" 
-                                onclick="clearMedia('image')">
-                            <i class="bi bi-x"></i>
-                        </button>
-                    </div>`;
-            } else if (type === 'video') {
-                // Clear image input if exists
-                const imageInput = document.querySelector('input[name="image"]');
-                if (imageInput) imageInput.value = '';
-                
-                preview.innerHTML = `
-                    <div class="position-relative">
-                        <video src="${e.target.result}" class="w-100 rounded" controls style="max-height: 300px; background: #000;"></video>
-                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" 
-                                onclick="clearMedia('video')">
-                            <i class="bi bi-x"></i>
-                        </button>
-                    </div>`;
-            }
+            // Remove existing video preview if any
+            const existingVideo = document.getElementById('videoPreviewContainer');
+            if (existingVideo) existingVideo.remove();
+            
+            preview.appendChild(videoPreview);
+            preview.style.display = 'block';
         }
         
         reader.readAsDataURL(file);
     }
 }
 
-function clearMedia(type) {
-    const input = document.querySelector(`input[name="${type}"]`);
+function removeImagePreview(index) {
+    const input = document.querySelector('input[name="images[]"]');
+    if (input) {
+        // Create a new FileList without the removed file
+        const dt = new DataTransfer();
+        const files = Array.from(input.files);
+        files.splice(index, 1);
+        files.forEach(file => dt.items.add(file));
+        input.files = dt.files;
+        
+        // Refresh preview
+        previewImages(input);
+    }
+}
+
+function clearVideo() {
+    const input = document.querySelector('input[name="video"]');
     if (input) input.value = '';
     
-    const preview = document.getElementById('mediaPreview');
-    preview.innerHTML = '';
-    preview.style.display = 'none';
+    const videoContainer = document.getElementById('videoPreviewContainer');
+    if (videoContainer) videoContainer.remove();
 }
 
 function requestAIHelp() {
