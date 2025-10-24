@@ -11,31 +11,62 @@
             @auth
             <div class="card shadow-sm mb-4" style="border-radius: 15px; border: none;">
                 <div class="card-body p-4">
-                    <div class="d-flex align-items-start">
-                                
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="d-flex gap-2">
-                                        <label class="btn btn-light btn-sm rounded-pill" style="cursor: pointer;" title="Upload Images (Max 5)">
-                                            <i class="bi bi-images text-success"></i>
-                                            <input type="file" name="images[]" accept="image/*" multiple style="display: none;" onchange="previewImages(this)">
-                                        </label>
-                                        <label class="btn btn-light btn-sm rounded-pill" style="cursor: pointer;" title="Upload Video">
-                                            <i class="bi bi-camera-video text-success"></i>
-                                            <input type="file" name="video" accept="video/*" style="display: none;" onchange="previewVideo(this)">
-                                        </label>
-                                        <button type="button" class="btn btn-light btn-sm rounded-pill" onclick="requestAIHelp()" title="AI Assistance">
-                                            <i class="bi bi-stars text-warning"></i> AI Help
-                                        </button>
-                                    </div>
-                                    <button type="submit" class="btn btn-success rounded-pill px-4">
-                                        <i class="bi bi-send-fill me-1"></i>Post
-                                    </button>
-                                </div>
-                                
-                                <div id="mediaPreview" class="mt-3" style="display: none;"></div>
-                            </form>
+                    <form action="{{ route('blogs.store') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="mb-3">
+                            <input type="text" 
+                                   class="form-control border-0 fs-5 fw-bold" 
+                                   name="title" 
+                                   placeholder="What's your environmental story?"
+                                   style="background: transparent;"
+                                   required>
                         </div>
-                    </div>
+                        
+                        <div class="mb-3">
+                            <textarea class="form-control border-0" 
+                                      name="content"
+                                      rows="3" 
+                                      placeholder="Share your thoughts with the community..."
+                                      style="background: #f8f9fa; border-radius: 12px; resize: none;"
+                                      required></textarea>
+                        </div>
+
+                        <div id="mediaPreview" class="mb-3" style="display: none;"></div>
+                        
+                        <input type="hidden" name="ai_assisted" id="aiAssisted" value="0">
+                        <div id="aiGeneratedImageContainer"></div>
+                        
+                        <!-- AI Assistance Section -->
+                        <div class="mb-3">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-warning btn-sm" onclick="showWebAIImageUpload()">
+                                    <i class="bi bi-magic me-1"></i>AI from Image
+                                </button>
+                                <button type="button" class="btn btn-warning btn-sm" onclick="enhanceWebContent()">
+                                    <i class="bi bi-stars me-1"></i>Enhance Writing
+                                </button>
+                                <button type="button" class="btn btn-warning btn-sm" onclick="generateWebBanner()">
+                                    <i class="bi bi-image me-1"></i>Generate Banner
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex gap-2">
+                                <label class="btn btn-light btn-sm rounded-pill" style="cursor: pointer;" title="Upload Images (Max 5)">
+                                    <i class="bi bi-images text-success"></i>
+                                    <input type="file" name="images[]" id="regularImages" accept="image/*" multiple style="display: none;" onchange="previewImages(this)">
+                                </label>
+                                <label class="btn btn-light btn-sm rounded-pill" style="cursor: pointer;" title="Upload Video">
+                                    <i class="bi bi-camera-video text-success"></i>
+                                    <input type="file" name="video" accept="video/*" style="display: none;" onchange="previewVideo(this)">
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-success rounded-pill px-4">
+                                <i class="bi bi-send-fill me-1"></i>Post
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
             @endauth
@@ -379,6 +410,31 @@
 
 <!-- Toast Container -->
 <div class="toast-container-custom" id="toastContainer"></div>
+
+<!-- AI Image Upload Modal -->
+<div class="modal fade" id="webAiImageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 15px;">
+            <div class="modal-header border-0 bg-warning bg-opacity-10">
+                <h5 class="modal-title">
+                    <i class="bi bi-magic me-2"></i>Generate Blog from Image
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted">Upload an image and AI will create a blog post about it!</p>
+                <div class="mb-3">
+                    <label class="btn btn-outline-warning w-100 py-3" style="cursor: pointer; border-style: dashed;">
+                        <i class="bi bi-cloud-upload fs-1 d-block mb-2"></i>
+                        <span class="d-block">Click to Upload Image</span>
+                        <small class="text-muted">AI will analyze and create content</small>
+                        <input type="file" id="webAiImageInput" accept="image/*" class="d-none" onchange="generateWebFromImage(this)">
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @push('styles')
 <style>
