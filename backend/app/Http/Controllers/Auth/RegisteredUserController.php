@@ -57,6 +57,9 @@ class RegisteredUserController extends Controller
         // Handle 'name' field (will be split by mutator) or first_name/last_name
         if ($request->has('name')) {
             $userData['name'] = $request->name;
+            // Set defaults for region/city if not provided (for Breeze tests)
+            $userData['region'] = $request->input('region', 'Unknown');
+            $userData['city'] = $request->input('city', 'Unknown');
         } else {
             $userData['first_name'] = $request->first_name;
             $userData['last_name'] = $request->last_name;
