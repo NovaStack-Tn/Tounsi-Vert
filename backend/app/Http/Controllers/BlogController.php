@@ -78,6 +78,8 @@ class BlogController extends Controller
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
             'video' => 'nullable|mimes:mp4,mov,avi,wmv|max:51200',
             'ai_assisted' => 'nullable|boolean',
+            'ai_generated_image' => 'nullable|string',
+            'ai_banner_image' => 'nullable|string',
         ]);
 
         $imagesPaths = [];
@@ -85,7 +87,18 @@ class BlogController extends Controller
         $hasImages = false;
         $hasVideo = false;
 
-        // Handle multiple images
+        // Handle AI-generated images first
+        if ($request->filled('ai_generated_image')) {
+            $imagesPaths[] = $request->input('ai_generated_image');
+            $hasImages = true;
+        }
+        
+        if ($request->filled('ai_banner_image')) {
+            $imagesPaths[] = $request->input('ai_banner_image');
+            $hasImages = true;
+        }
+
+        // Handle multiple images upload
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
                 $imagesPaths[] = $image->store('blogs/images', 'public');
@@ -103,7 +116,7 @@ class BlogController extends Controller
             'user_id' => auth()->id(),
             'title' => $request->title,
             'content' => $request->content,
-            'image_path' => !empty($imagesPaths) ? $imagesPaths[0] : null, // Keep first image for backward compatibility
+            'image_path' => !empty($imagesPaths) ? $imagesPaths[0] : null,
             'images_paths' => $imagesPaths,
             'video_path' => $videoPath,
             'has_images' => $hasImages,

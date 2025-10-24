@@ -76,22 +76,44 @@
                         <!-- Media Preview -->
                         <div id="mediaPreview" class="mb-4" style="display: none;"></div>
 
+                        <!-- AI Loading Indicator -->
+                        <div id="aiLoadingIndicator" class="alert alert-info mb-4" style="display: none;">
+                            <div class="d-flex align-items-center">
+                                <div class="spinner-border spinner-border-sm me-3" role="status"></div>
+                                <div>
+                                    <strong>🤖 AI is working...</strong>
+                                    <div id="aiLoadingText" class="small">Processing your request...</div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- AI Assistance -->
                         <div class="mb-4">
                             <div class="card bg-light border-0">
                                 <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="mb-1"><i class="bi bi-stars text-warning me-2"></i>AI Assistance</h6>
-                                            <small class="text-muted">Let AI help improve your writing</small>
+                                    <h6 class="mb-3"><i class="bi bi-stars text-warning me-2"></i>AI Assistance</h6>
+                                    <div class="row g-2">
+                                        <div class="col-md-4">
+                                            <button type="button" class="btn btn-warning btn-sm w-100" onclick="showAIImageUploadModal()">
+                                                <i class="bi bi-magic me-1"></i>Generate from Image
+                                            </button>
                                         </div>
-                                        <button type="button" class="btn btn-warning btn-sm" onclick="requestAIHelp()">
-                                            <i class="bi bi-magic me-1"></i>Enhance
-                                        </button>
+                                        <div class="col-md-4">
+                                            <button type="button" class="btn btn-warning btn-sm w-100" onclick="enhanceOrgContent()">
+                                                <i class="bi bi-stars me-1"></i>Enhance Content
+                                            </button>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button type="button" class="btn btn-warning btn-sm w-100" onclick="generateOrgBanner()">
+                                                <i class="bi bi-image me-1"></i>Generate Banner
+                                            </button>
+                                        </div>
                                     </div>
+                                    <small class="text-muted d-block mt-2">AI will help create and improve your content</small>
                                 </div>
                             </div>
                             <input type="hidden" name="ai_assisted" id="aiAssisted" value="0">
+                            <div id="aiGeneratedImageContainer"></div>
                         </div>
 
                         <!-- Actions -->
@@ -196,17 +218,168 @@ function clearVideo() {
     if (videoContainer) videoContainer.remove();
 }
 
-function requestAIHelp() {
-    const title = document.getElementById('title').value;
-    const content = document.getElementById('content').value;
+// Show AI Image Upload Modal
+function showAIImageUploadModal() {
+    const modalHtml = `
+        <div class="modal fade" id="aiImageModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border-radius: 15px;">
+                    <div class="modal-header border-0 bg-warning bg-opacity-10">
+                        <h5 class="modal-title"><i class="bi bi-magic me-2"></i>Generate Blog from Image</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <p class="text-muted">Upload an image and AI will create a blog post about it!</p>
+                        <label class="btn btn-outline-warning w-100 py-4" style="cursor: pointer; border-style: dashed;">
+                            <i class="bi bi-cloud-upload fs-1 d-block mb-2"></i>
+                            <span class="d-block">Click to Upload Image</span>
+                            <small class="text-muted">AI will analyze and create content</small>
+                            <input type="file" id="aiImageInput" accept="image/*" class="d-none" onchange="generateFromOrgImage(this)">
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>`;
     
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modal = new bootstrap.Modal(document.getElementById('aiImageModal'));
+    modal.show();
+}
+
+// Generate from image
+function generateFromOrgImage(input) {
+    if (!input.files || !input.files[0]) return;
+
+    const formData = new FormData();
+    formData.append('image', input.files[0]);
+
+    showAILoading('Analyzing image and generating content...');
+
+    fetch('{{ route("blogs.ai.generateFromImage") }}', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideAILoading();
+        if (data.success) {
+            document.getElementById('title').value = data.title;
+            document.getElementById('content').value = data.content;
+            document.getElementById('aiAssisted').value = '1';
+            
+            if (data.image_path) {
+                const container = document.getElementById('aiGeneratedImageContainer');
+                container.innerHTML = `<input type="hidden" name="ai_generated_image" value="${data.image_path}">`;
+                
+                const preview = document.getElementById('mediaPreview');
+                preview.innerHTML = `<div class="alert alert-warning"><i class="bi bi-magic me-2"></i>AI Generated Image Added</div>`;
+                preview.style.display = 'block';
+            }
+            
+            bootstrap.Modal.getInstance(document.getElementById('aiImageModal')).hide();
+            alert(data.message);
+        } else {
+            alert(data.message || 'Failed to generate content');
+        }
+    })
+    .catch(error => {
+        hideAILoading();
+        alert('Error: ' + error.message);
+    });
+}
+
+// Enhance content
+function enhanceOrgContent() {
+    const title = document.getElementById('title').value.trim();
+    const content = document.getElementById('content').value.trim();
+
     if (!title && !content) {
         alert('Please write something first!');
         return;
     }
-    
-    document.getElementById('aiAssisted').value = '1';
-    alert('AI assistance will help enhance your blog post with better grammar and structure! (Feature coming soon)');
+
+    showAILoading('Enhancing your content with AI...');
+
+    fetch('{{ route("blogs.ai.enhanceContent") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title, content })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideAILoading();
+        if (data.success) {
+            document.getElementById('title').value = data.title;
+            document.getElementById('content').value = data.content;
+            document.getElementById('aiAssisted').value = '1';
+            alert(data.message);
+        } else {
+            alert(data.message || 'Failed to enhance content');
+        }
+    })
+    .catch(error => {
+        hideAILoading();
+        alert('Error: ' + error.message);
+    });
+}
+
+// Generate banner
+function generateOrgBanner() {
+    const title = document.getElementById('title').value.trim();
+
+    if (!title) {
+        alert('Please enter a title first!');
+        return;
+    }
+
+    showAILoading('Generating banner image with DALL-E...');
+
+    fetch('{{ route("blogs.ai.generateBanner") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title, content: document.getElementById('content').value })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideAILoading();
+        if (data.success) {
+            const container = document.getElementById('aiGeneratedImageContainer');
+            container.innerHTML = `<input type="hidden" name="ai_banner_image" value="${data.image_path}">`;
+            
+            const preview = document.getElementById('mediaPreview');
+            preview.innerHTML = `<div class="alert alert-warning">
+                <i class="bi bi-magic me-2"></i>AI Generated Banner Image Added
+                <img src="${data.image_url}" class="img-fluid rounded mt-2" style="max-height: 200px;">
+            </div>`;
+            preview.style.display = 'block';
+            
+            document.getElementById('aiAssisted').value = '1';
+            alert(data.message);
+        } else {
+            alert(data.message || 'Failed to generate banner');
+        }
+    })
+    .catch(error => {
+        hideAILoading();
+        alert('Error: ' + error.message);
+    });
+}
+
+// Show/Hide AI loading
+function showAILoading(message) {
+    document.getElementById('aiLoadingText').textContent = message;
+    document.getElementById('aiLoadingIndicator').style.display = 'block';
+}
+
+function hideAILoading() {
+    document.getElementById('aiLoadingIndicator').style.display = 'none';
 }
 </script>
 @endpush

@@ -12,32 +12,6 @@
             <div class="card shadow-sm mb-4" style="border-radius: 15px; border: none;">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-start">
-                        <div class="user-avatar-lg text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
-                             style="width: 50px; height: 50px; background: linear-gradient(135deg, #52b788 0%, #2d6a4f 100%);">
-                            <i class="bi bi-person-fill fs-4"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <form action="{{ route('blogs.store') }}" method="POST" enctype="multipart/form-data" id="blogForm">
-                                @csrf
-                                <input type="hidden" name="ai_assisted" id="aiAssisted" value="0">
-                                
-                                <div class="mb-3">
-                                    <input type="text" 
-                                           class="form-control form-control-lg border-0" 
-                                           name="title"
-                                           placeholder="What's your story?" 
-                                           style="background: #f8f9fa; border-radius: 12px;"
-                                           required>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <textarea class="form-control border-0" 
-                                              name="content"
-                                              rows="3" 
-                                              placeholder="Share your thoughts with the community..."
-                                              style="background: #f8f9fa; border-radius: 12px; resize: none;"
-                                              required></textarea>
-                                </div>
                                 
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="d-flex gap-2">
